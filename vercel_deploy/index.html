@@ -124,13 +124,13 @@
         ];
 
         const INITIAL_VEHICLES = [
-            { vehicleId: "V001", customerId: "C001", licensePlate: "29A-999.99", brand: "Honda", model: "SH 150i", vehicleName: "SH Đen bóng", registeredAt: "2026-06-10T08:00:00Z" },
-            { vehicleId: "V002", customerId: "C001", licensePlate: "30E-888.88", brand: "Yamaha", model: "Exciter 155", vehicleName: "Exciter Xanh", registeredAt: "2026-07-01T10:00:00Z" }
+            { vehicleId: "V001", customerId: "C001", licensePlate: "29A-999.99", brand: "VinFast", model: "VF 8", vehicleName: "VF 8 Đen bóng", registeredAt: "2026-06-10T08:00:00Z" },
+            { vehicleId: "V002", customerId: "C001", licensePlate: "30E-888.88", brand: "Mazda", model: "Mazda 3", vehicleName: "Mazda 3 Trắng", registeredAt: "2026-07-01T10:00:00Z" }
         ];
 
         const INITIAL_SERVICES = [
-            { serviceId: "S001", serviceName: "Rửa Tiêu Chuẩn (Standard Wash)", category: "Wash Package", basePrice: 60000, estimateMinutes: 20, rating: 4.8, reviewsCount: 128, description: "Rửa bọt tuyết, hút bụi thảm chân, sấy khô." },
-            { serviceId: "S002", serviceName: "Rửa Cao Cấp (Premium Wash)", category: "Wash Package", basePrice: 120000, estimateMinutes: 35, rating: 4.9, reviewsCount: 254, description: "Rửa bọt tuyết 3 lớp, đánh bóng lốp, vệ sinh nội thất cơ bản, xịt khử mùi cabin." },
+            { serviceId: "S001", serviceName: "Rửa Ô tô Tiêu Chuẩn (Standard Car Wash)", category: "Wash Package", basePrice: 60000, estimateMinutes: 20, rating: 4.8, reviewsCount: 128, description: "Rửa bọt tuyết, hút bụi thảm chân, sấy khô." },
+            { serviceId: "S002", serviceName: "Rửa & Chăm sóc Cao cấp (Premium Car Detailing)", category: "Wash Package", basePrice: 120000, estimateMinutes: 35, rating: 4.9, reviewsCount: 254, description: "Rửa bọt tuyết 3 lớp, đánh bóng lốp, vệ sinh nội thất cơ bản, xịt khử mùi cabin." },
             { serviceId: "S003", serviceName: "Vệ Sinh Khoang Máy chuyên sâu", category: "Add-on", basePrice: 150000, estimateMinutes: 30, rating: 4.7, reviewsCount: 64, description: "Dọn dẹp dầu mỡ dư thừa, phủ bóng dưỡng dây điện khoang máy." },
             { serviceId: "S004", serviceName: "Đánh Bóng Gầm chống rỉ", category: "Add-on", basePrice: 80000, estimateMinutes: 15, rating: 4.6, reviewsCount: 42, description: "Xịt dung dịch bảo vệ gầm và cổ xả." },
             { serviceId: "S005", serviceName: "Khử Khuẩn Ozone nội thất", category: "Add-on", basePrice: 50000, estimateMinutes: 10, rating: 4.9, reviewsCount: 88, description: "Sử dụng máy Ozone tiêu diệt 99% vi khuẩn, ẩm mốc cabin." }
@@ -360,7 +360,7 @@
                             registeredAt: new Date().toISOString()
                         };
                         updateTable("vehicles", [...db.vehicles, newVeh]);
-                        alert("Đăng ký liên kết xe máy mới thành công!");
+                        alert("Đăng ký liên kết ô tô mới thành công!");
                         setVehicleInput({ brand: "", model: "", licensePlate: "", vehicleName: "" });
                     }
                     setOtpModal(null);
@@ -677,7 +677,7 @@
                                         <div id="services" className="max-w-7xl w-full mx-auto px-6 pb-20">
                                             <div className="text-center mb-12">
                                                 <h2 className="text-3xl font-black text-slate-800 dark:text-white">Bảng Giá Các Dịch Vụ Rửa Xe AutoWash</h2>
-                                                <p className="text-slate-500 dark:text-slate-400 mt-2">Đa dạng lựa chọn chăm sóc chuyên nghiệp xe máy và xe ga của bạn</p>
+                                                <p className="text-slate-500 dark:text-slate-400 mt-2">Đa dạng lựa chọn chăm sóc chuyên nghiệp ô tô và xe ga của bạn</p>
                                             </div>
 
                                             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -829,7 +829,7 @@
                                                 <span className="material-symbols-outlined text-[20px]">history</span> Lịch Sử Rửa Xe
                                             </button>
                                             <button onClick={() => setCustomerSubTab("vehicles")} className={`w-full text-left px-4 py-3 rounded-xl text-sm font-bold flex items-center gap-3 transition ${customerSubTab === 'vehicles' ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-600 border border-blue-100 dark:border-blue-900' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}>
-                                                <span className="material-symbols-outlined text-[20px]">two_wheeler</span> Quản Lý Xe Máy
+                                                <span className="material-symbols-outlined text-[20px]">directions_car</span> Quản Lý Ô tô
                                             </button>
                                             <button onClick={() => setCustomerSubTab("loyalty")} className={`w-full text-left px-4 py-3 rounded-xl text-sm font-bold flex items-center gap-3 transition ${customerSubTab === 'loyalty' ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-600 border border-blue-100 dark:border-blue-900' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}>
                                                 <span className="material-symbols-outlined text-[20px]">featured_seasonal_and_gifts</span> Đổi Quà Voucher
@@ -923,7 +923,7 @@
                                             {customerSubTab === "services" && (
                                                 <div className="flex flex-col gap-6">
                                                     <div className="flex justify-between items-center">
-                                                        <h2 className="text-2xl font-black text-slate-800 dark:text-white">Đặt Lịch Hẹn Chăm Sóc Xe Máy</h2>
+                                                        <h2 className="text-2xl font-black text-slate-800 dark:text-white">Đặt Lịch Hẹn Chăm Sóc Ô tô</h2>
                                                         <span className="text-xs bg-blue-100 text-blue-600 font-bold px-3 py-1.5 rounded-full uppercase">Wizard Step {bookingWizard.step} / 4</span>
                                                     </div>
 
@@ -941,7 +941,7 @@
                                                     {/* WIZARD STEP 1: CHOOSE SERVICE */}
                                                     {bookingWizard.step === 1 && (
                                                         <div className="flex flex-col gap-6">
-                                                            <h4 className="font-extrabold text-base text-slate-800 dark:text-white">Chọn Gói Rửa Xe Máy Chính:</h4>
+                                                            <h4 className="font-extrabold text-base text-slate-800 dark:text-white">Chọn Gói Rửa Ô tô Chính:</h4>
                                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                                 {db.services?.filter(s => s.category === 'Wash Package').map(s => (
                                                                     <div key={s.serviceId} onClick={() => setBookingWizard(prev => ({ ...prev, packageId: s.serviceId }))} className={`p-5 rounded-xl border-2 cursor-pointer transition ${bookingWizard.packageId === s.serviceId ? 'bg-blue-50/50 dark:bg-blue-950/20 border-blue-500' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'}`}>
@@ -989,7 +989,7 @@
                                                     {/* WIZARD STEP 2: CHOOSE VEHICLE */}
                                                     {bookingWizard.step === 2 && (
                                                         <div className="flex flex-col gap-6">
-                                                            <h4 className="font-extrabold text-base text-slate-800 dark:text-white">Chọn Xe Máy Thực Hiện Đặt Lịch:</h4>
+                                                            <h4 className="font-extrabold text-base text-slate-800 dark:text-white">Chọn Ô tô Thực Hiện Đặt Lịch:</h4>
                                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                                 {db.vehicles?.filter(v => v.customerId === currentUser.customer?.customerId).map(v => (
                                                                     <div key={v.vehicleId} onClick={() => setBookingWizard(prev => ({ ...prev, vehicleId: v.vehicleId }))} className={`p-4 rounded-xl border-2 cursor-pointer transition ${bookingWizard.vehicleId === v.vehicleId ? 'bg-blue-50/50 dark:bg-blue-950/20 border-blue-500' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'}`}>
@@ -1118,7 +1118,7 @@
                                                             <thead>
                                                                 <tr className="border-b border-slate-100 dark:border-slate-700/80 text-slate-400 font-bold uppercase text-xs">
                                                                     <th className="pb-3">Mã Hẹn</th>
-                                                                    <th className="pb-3">Xe máy</th>
+                                                                    <th className="pb-3">Ô tô</th>
                                                                     <th className="pb-3">Thời gian hẹn</th>
                                                                     <th className="pb-3">Hóa đơn</th>
                                                                     <th className="pb-3">Xếp Hàng status</th>
@@ -1160,7 +1160,7 @@
                                                     
                                                     {/* Register Vehicle Widget */}
                                                     <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 material-shadow">
-                                                        <h3 className="font-extrabold text-base mb-4 text-slate-800 dark:text-white">Đăng ký liên kết xe máy mới</h3>
+                                                        <h3 className="font-extrabold text-base mb-4 text-slate-800 dark:text-white">Đăng ký liên kết ô tô mới</h3>
                                                         <form onSubmit={(e) => { e.preventDefault(); triggerOtpAuth("vehicle", vehicleInput); }} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                             <div>
                                                                 <label className="text-xs font-bold text-slate-400 block mb-2 uppercase">Biển Số Xe</label>
@@ -1168,7 +1168,7 @@
                                                             </div>
                                                             <div>
                                                                 <label className="text-xs font-bold text-slate-400 block mb-2 uppercase">Hãng Xe</label>
-                                                                <input required value={vehicleInput.brand} onChange={(e) => setVehicleInput(prev => ({ ...prev, brand: e.target.value }))} placeholder="Honda" className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-250 dark:border-slate-700 p-3 rounded-xl text-sm outline-none text-slate-800 dark:text-white focus:border-blue-500" />
+                                                                <input required value={vehicleInput.brand} onChange={(e) => setVehicleInput(prev => ({ ...prev, brand: e.target.value }))} placeholder="VinFast" className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-250 dark:border-slate-700 p-3 rounded-xl text-sm outline-none text-slate-800 dark:text-white focus:border-blue-500" />
                                                             </div>
                                                             <div>
                                                                 <label className="text-xs font-bold text-slate-400 block mb-2 uppercase">Dòng Xe</label>
@@ -1186,7 +1186,7 @@
 
                                                     {/* Vehicles List */}
                                                     <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 material-shadow">
-                                                        <h3 className="font-extrabold text-base mb-4 text-slate-800 dark:text-white">Xe máy liên kết của bạn</h3>
+                                                        <h3 className="font-extrabold text-base mb-4 text-slate-800 dark:text-white">Ô tô liên kết của bạn</h3>
                                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                             {db.vehicles?.filter(v => v.customerId === currentUser.customer?.customerId).map(v => (
                                                                 <div key={v.vehicleId} className="bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 p-4 rounded-xl flex justify-between items-center">
@@ -1625,7 +1625,7 @@
                                             {/* Subtab Mobile: VEHICLES */}
                                             {customerSubTab === "vehicles" && (
                                                 <div className="flex flex-col gap-3">
-                                                    <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Đăng ký xe máy</h3>
+                                                    <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Đăng ký ô tô</h3>
                                                     <form onSubmit={(e) => { e.preventDefault(); triggerOtpAuth("vehicle", vehicleInput); }} className="bg-slate-800 p-3 rounded-xl border border-slate-700 flex flex-col gap-2.5">
                                                         <input required value={vehicleInput.licensePlate} onChange={(e) => setVehicleInput(prev => ({ ...prev, licensePlate: e.target.value }))} placeholder="Biển Số Xe (Ví dụ: 29A-999.99)" className="w-full bg-slate-900 border border-slate-750 px-3 py-2 rounded text-xs text-white" />
                                                         <input required value={vehicleInput.brand} onChange={(e) => setVehicleInput(prev => ({ ...prev, brand: e.target.value }))} placeholder="Hãng (Honda, Yamaha)" className="w-full bg-slate-900 border border-slate-750 px-3 py-2 rounded text-xs text-white" />
@@ -1690,7 +1690,7 @@
                                                 <span className="material-symbols-outlined text-[20px]">calendar_month</span>Đặt lịch
                                             </button>
                                             <button onClick={() => setCustomerSubTab("vehicles")} className={`flex flex-col items-center gap-0.5 text-[9px] font-bold ${customerSubTab === 'vehicles' ? 'text-blue-500' : 'text-slate-500'}`}>
-                                                <span className="material-symbols-outlined text-[20px]">two_wheeler</span>Xe máy
+                                                <span className="material-symbols-outlined text-[20px]">directions_car</span>Ô tô
                                             </button>
                                             <button onClick={() => setCustomerSubTab("loyalty")} className={`flex flex-col items-center gap-0.5 text-[9px] font-bold ${customerSubTab === 'loyalty' ? 'text-blue-500' : 'text-slate-500'}`}>
                                                 <span className="material-symbols-outlined text-[20px]">military_tech</span>Đổi quà
@@ -1860,7 +1860,7 @@
                                                                 <tr className="border-b border-slate-100 dark:border-slate-700 text-slate-400 font-bold uppercase text-xs">
                                                                     <th className="pb-3">Khách Hàng</th>
                                                                     <th className="pb-3">Mã Đặt</th>
-                                                                    <th className="pb-3">Xe máy</th>
+                                                                    <th className="pb-3">Ô tô</th>
                                                                     <th className="pb-3">Giờ hẹn</th>
                                                                     <th className="pb-3">Tổng bill</th>
                                                                     <th className="pb-3">Trạng thái</th>
