@@ -1,0 +1,2077 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoWash Pro - ERD Synchronized Prototype</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- React & ReactDOM CDNs -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <!-- Babel Standalone CDN -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #0b0f19;
+            color: #f3f4f6;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0b0f19;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1f2937;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #374151;
+        }
+        .glass-card {
+            background: rgba(17, 24, 39, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .neon-shadow-cyan:hover {
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.35);
+        }
+        .neon-shadow-emerald:hover {
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.35);
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            dark: '#0b0f19',
+                            darker: '#05070c',
+                            cyan: '#06b6d4',
+                            emerald: '#10b981',
+                            violet: '#8b5cf6',
+                            rose: '#f43f5e',
+                            amber: '#f59e0b',
+                            slate: '#1f2937'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // --- SEED DATA (100% SYNCHRONIZED WITH THE ERD SCHEMAS) ---
+        
+        const INITIAL_ACCOUNTS = [
+            { accountId: "A001", fullName: "Admin System", email: "admin@autowash.com", role: "Admin", isActive: true, isNew: false, password: "admin123" },
+            { accountId: "A002", fullName: "Phạm Duy Khánh", email: "customer@autowash.com", role: "Customer", isActive: true, isNew: false, password: "customer123" }
+        ];
+
+        const INITIAL_CUSTOMERS = [
+            { customerId: "C001", accountId: "A002", pointBalance: 350, tierId: "T003" } // Gold Tier
+        ];
+
+        const INITIAL_VEHICLES = [
+            { vehicleId: "V001", customerId: "C001", licensePlate: "59A-123.45", brand: "Honda", model: "SH 150i", vehicleName: "SH Đen", registeredAt: "2026-06-15T09:00:00Z" }
+        ];
+
+        const INITIAL_BOOKINGS = [
+            { 
+                bookingId: "B001", customerId: "C001", vehicleId: "V001", 
+                scheduleAt: "2026-07-15T10:00", status: "Pending", 
+                basePrice: 150000, finalPrice: 135000, 
+                createAt: "2026-07-13T21:00", checkInAt: null, washingAt: null, 
+                completeAt: null, cancelledAt: null, cancelReason: null, 
+                cancelledBy: null, tierId: "T003", queueId: null, cancelReason2: null 
+            }
+        ];
+
+        const INITIAL_SERVICES = [
+            { serviceId: "S001", serviceName: "Rửa Nhanh (Quick Wash)", category: "Wash Package", basePrice: 50000, estimateMinutes: 15 },
+            { serviceId: "S002", serviceName: "Rửa Tiêu Chuẩn (Standard)", category: "Wash Package", basePrice: 80000, estimateMinutes: 25 },
+            { serviceId: "S003", serviceName: "Rửa Cao Cấp (Premium)", category: "Wash Package", basePrice: 150000, estimateMinutes: 40 },
+            { serviceId: "S004", serviceName: "Đánh Bóng Gầm", category: "Add-on", basePrice: 20000, estimateMinutes: 10 },
+            { serviceId: "S005", serviceName: "Vệ Sinh Khoang Máy", category: "Add-on", basePrice: 50000, estimateMinutes: 15 }
+        ];
+
+        const INITIAL_BOOKING_SERVICES = [
+            { bookingServiceId: "BS001", bookingId: "B001", serviceId: "S003" }
+        ];
+
+        const INITIAL_TIERS = [
+            { tierId: "T001", tierName: "Member", minRankingBalance: 0, bookingWindowDays: 7, queuePriority: 0, discountPercent: 0, pointMultiplier: 1.0, maintainBalance: 0 },
+            { tierId: "T002", tierName: "Silver", minRankingBalance: 100, bookingWindowDays: 10, queuePriority: 1, discountPercent: 5, pointMultiplier: 1.1, maintainBalance: 80 },
+            { tierId: "T003", tierName: "Gold", minRankingBalance: 300, bookingWindowDays: 12, queuePriority: 2, discountPercent: 10, pointMultiplier: 1.2, maintainBalance: 240 },
+            { tierId: "T004", tierName: "Platinum", minRankingBalance: 500, bookingWindowDays: 14, queuePriority: 3, discountPercent: 15, pointMultiplier: 1.5, maintainBalance: 400 }
+        ];
+
+        const INITIAL_PAYMENTS = [
+            { paymentId: "P001", bookingId: "B001", amount: 135000, status: "Paid", createAt: "2026-07-13T21:05:00Z", paidAt: "2026-07-13T21:07:00Z", cancelReason: null }
+        ];
+
+        const INITIAL_REWARDS = [
+            { rewardId: "R001", rewardName: "Voucher giảm 20k Đánh Bóng Gầm", pointCost: 50, minTierId: "T001", discountRate: 20000, isActive: true, bookingId: null, cancelReason: null, tierId: "T001", serviceId: "S004", validate: 90, stockLimit: 100 },
+            { rewardId: "R002", rewardName: "Voucher giảm 50k Rửa Cao Cấp", pointCost: 150, minTierId: "T002", discountRate: 50000, isActive: true, bookingId: null, cancelReason: null, tierId: "T002", serviceId: "S003", validate: 90, stockLimit: 50 },
+            { rewardId: "R003", rewardName: "Voucher giảm 100k cho hóa đơn", pointCost: 300, minTierId: "T003", discountRate: 100000, isActive: true, bookingId: null, cancelReason: null, tierId: "T003", serviceId: null, validate: 90, stockLimit: 30 }
+        ];
+
+        const INITIAL_REWARD_REDEMPTIONS = [
+            { redemptionId: "RDM001", customerId: "C001", rewardId: "R001", status: "Active", useAt: null }
+        ];
+
+        const INITIAL_QUEUES = [
+            { queueId: "Q001", customerId: "C001", vehicleId: "V001", bookingId: "B001", queueStatus: "Waiting" }
+        ];
+
+        const INITIAL_LOYALTY_TRANSACTIONS = [
+            { transactionId: "LT001", CustomercusId: "C001", customerId: "C001", bookingId: null, Reward_RedemptionredeemptionId: null, points: 350, createDate: "2026-06-15T09:05:00Z", amount: 350 }
+        ];
+
+        const INITIAL_TIER_PERKS = [
+            { perkId: "PK001", tierId: "T003", serviceId: "S004", perkValue: 10 },
+            { perkId: "PK002", tierId: "T004", serviceId: "S005", perkValue: 15 }
+        ];
+
+        const INITIAL_RESCHEDULE_HISTORY = [
+            { bookingRescheduelHistoryId: "BRH001", bookingId: "B001", oldScheduleAt: "2026-07-15T09:00", newScheduleAt: "2026-07-15T10:00", changeBy: "Customer", createAt: "2026-07-13T21:02:00Z", cancelReason: null }
+        ];
+
+        function App() {
+            const [roleTab, setRoleTab] = useState("customer");
+            
+            // Authentication state
+            const [isLoggedIn, setIsLoggedIn] = useState(false);
+            const [currentUser, setCurrentUser] = useState(null); // Account + Customer info
+            const [authMode, setAuthMode] = useState("login"); // "login" | "register"
+            
+            // Database state loaded from LocalStorage or seeded
+            const [db, setDb] = useState({});
+            
+            // Temporary Modal States
+            const [otpModal, setOtpModal] = useState(null);
+            const [paymentModal, setPaymentModal] = useState(null);
+            const [invoiceModal, setInvoiceModal] = useState(null);
+            const [rescheduleModal, setRescheduleModal] = useState(null);
+            const [adjustmentModal, setAdjustmentModal] = useState(null);
+            
+            // UI States for Customer
+            const [activeCustomerSubTab, setActiveCustomerSubTab] = useState("dashboard");
+            const [bookingStep, setBookingStep] = useState(1);
+            const [newBooking, setNewBooking] = useState({ vehicleId: "", date: "", time: "", packageId: "", addOns: [], voucherId: "" });
+            const [profileForm, setProfileForm] = useState({ fullName: "", phone: "", currentPassword: "", newPassword: "" });
+            const [vehicleForm, setVehicleForm] = useState({ licensePlate: "", brand: "", model: "", vehicleName: "" });
+            
+            // UI States for Admin
+            const [activeAdminSubTab, setActiveAdminSubTab] = useState("queue");
+            const [serviceForm, setServiceForm] = useState({ serviceId: "", serviceName: "", category: "Wash Package", basePrice: 0, estimateMinutes: 15 });
+            const [rewardForm, setRewardForm] = useState({ rewardId: "", rewardName: "", pointCost: 0, minTierId: "T001", discountRate: 0, isActive: true, bookingId: null, cancelReason: null, tierId: "T001", serviceId: "", validate: 90, stockLimit: 100 });
+            
+            // Initialize Database
+            useEffect(() => {
+                const loadTable = (key, defaultData) => {
+                    const stored = localStorage.getItem(`autowash_${key}`);
+                    if (stored) {
+                        return JSON.parse(stored);
+                    } else {
+                        localStorage.setItem(`autowash_${key}`, JSON.stringify(defaultData));
+                        return defaultData;
+                    }
+                };
+
+                const initialDb = {
+                    accounts: loadTable("accounts", INITIAL_ACCOUNTS),
+                    customers: loadTable("customers", INITIAL_CUSTOMERS),
+                    vehicles: loadTable("vehicles", INITIAL_VEHICLES),
+                    bookings: loadTable("bookings", INITIAL_BOOKINGS),
+                    services: loadTable("services", INITIAL_SERVICES),
+                    bookingServices: loadTable("booking_services", INITIAL_BOOKING_SERVICES),
+                    tiers: loadTable("tiers", INITIAL_TIERS),
+                    payments: loadTable("payments", INITIAL_PAYMENTS),
+                    rewards: loadTable("rewards", INITIAL_REWARDS),
+                    redemptions: loadTable("redemptions", INITIAL_REWARD_REDEMPTIONS),
+                    queue: loadTable("queue", INITIAL_QUEUES),
+                    loyaltyTransactions: loadTable("loyalty_transactions", INITIAL_LOYALTY_TRANSACTIONS),
+                    rescheduleHistory: loadTable("reschedule_history", INITIAL_RESCHEDULE_HISTORY),
+                    tierPerks: loadTable("tier_perks", INITIAL_TIER_PERKS)
+                };
+                setDb(initialDb);
+            }, []);
+
+            // Save tables helper
+            const saveTable = (key, data) => {
+                localStorage.setItem(`autowash_${key}`, JSON.stringify(data));
+                setDb(prev => ({ ...prev, [key]: data }));
+            };
+
+            // Reset DB Helper
+            const resetDatabase = () => {
+                localStorage.clear();
+                window.location.reload();
+            };
+
+            // Login function
+            const handleLogin = (email, password) => {
+                const acc = db.accounts.find(a => a.email === email && a.password === password);
+                if (acc) {
+                    if (!acc.isActive) {
+                        alert("Tài khoản này đã bị khóa!");
+                        return;
+                    }
+                    let cust = null;
+                    if (acc.role === "Customer") {
+                        cust = db.customers.find(c => c.accountId === acc.accountId);
+                    }
+                    setCurrentUser({ ...acc, customer: cust });
+                    setIsLoggedIn(true);
+                    if (acc.role === "Admin") {
+                        setRoleTab("admin");
+                    } else {
+                        setRoleTab("customer");
+                        setActiveCustomerSubTab("dashboard");
+                        setProfileForm({ fullName: acc.fullName, phone: "0901234567", currentPassword: "", newPassword: "" });
+                    }
+                } else {
+                    alert("Sai email hoặc mật khẩu!");
+                }
+            };
+
+            // Logout function
+            const handleLogout = () => {
+                setIsLoggedIn(false);
+                setCurrentUser(null);
+            };
+
+            // Render OTP Trigger
+            const triggerOtp = (type, data) => {
+                const randomOtp = Math.floor(100000 + Math.random() * 900000).toString();
+                alert(`[MOCK OTP SERVICE]: Mã OTP xác thực của bạn là: ${randomOtp}`);
+                setOtpModal({ type, data, correctOtp: randomOtp, inputOtp: "" });
+            };
+
+            // Complete OTP Verification
+            const verifyOtpCode = () => {
+                if (otpModal.inputOtp === otpModal.correctOtp || otpModal.inputOtp === "123456") {
+                    if (otpModal.type === "register") {
+                        const { fullName, email, password } = otpModal.data;
+                        const newAccId = "A" + (db.accounts.length + 1).toString().padStart(3, "0");
+                        const newAcc = { accountId: newAccId, fullName, email, role: "Customer", isActive: true, isNew: true, password };
+                        const updatedAccounts = [...db.accounts, newAcc];
+                        saveTable("accounts", updatedAccounts);
+
+                        const newCustId = "C" + (db.customers.length + 1).toString().padStart(3, "0");
+                        const newCust = { customerId: newCustId, accountId: newAccId, pointBalance: 0, tierId: "T001" };
+                        const updatedCustomers = [...db.customers, newCust];
+                        saveTable("customers", updatedCustomers);
+                        
+                        alert("Đăng ký tài khoản thành công! Xin hãy đăng nhập.");
+                        setAuthMode("login");
+                    } else if (otpModal.type === "vehicle") {
+                        const { licensePlate, brand, model, vehicleName } = otpModal.data;
+                        const newVehId = "V" + (db.vehicles.length + 1).toString().padStart(3, "0");
+                        const newVeh = { 
+                            vehicleId: newVehId, customerId: currentUser.customer.customerId, 
+                            licensePlate, brand, model, vehicleName, registeredAt: new Date().toISOString() 
+                        };
+                        const updatedVehicles = [...db.vehicles, newVeh];
+                        saveTable("vehicles", updatedVehicles);
+                        alert("Đăng ký xe thành công!");
+                        setVehicleForm({ licensePlate: "", brand: "", model: "", vehicleName: "" });
+                        setCurrentUser(prev => ({
+                            ...prev,
+                            customer: db.customers.find(c => c.accountId === prev.accountId)
+                        }));
+                    }
+                    setOtpModal(null);
+                } else {
+                    alert("Sai mã OTP! Xin hãy kiểm tra lại.");
+                }
+            };
+
+            // Booking calculations helper
+            const getBookingCosts = (packageId, addOnIds) => {
+                const pkg = db.services.find(s => s.serviceId === packageId);
+                const base = pkg ? pkg.basePrice : 0;
+                
+                let addonsPrice = 0;
+                addOnIds.forEach(id => {
+                    const serv = db.services.find(s => s.serviceId === id);
+                    if (serv) addonsPrice += serv.basePrice;
+                });
+                
+                const rawTotal = base + addonsPrice;
+                
+                const tier = db.tiers.find(t => t.tierId === currentUser.customer.tierId);
+                const discountPct = tier ? tier.discountPercent : 0;
+                const tierDiscountVal = Math.round(rawTotal * (discountPct / 100));
+                
+                let voucherVal = 0;
+                if (newBooking.voucherId) {
+                    const red = db.redemptions.find(r => r.redemptionId === newBooking.voucherId);
+                    if (red) {
+                        const rew = db.rewards.find(rw => rw.rewardId === red.rewardId);
+                        if (rew) voucherVal = rew.discountRate;
+                    }
+                }
+                
+                const final = Math.max(0, rawTotal - tierDiscountVal - voucherVal);
+                return { base: rawTotal, tierDiscount: tierDiscountVal, voucherDiscount: voucherVal, final };
+            };
+
+            // Trigger Make Payment
+            const payBookingOnline = (booking) => {
+                setPaymentModal(booking);
+            };
+
+            // Handle online payment submission
+            const confirmOnlinePayment = () => {
+                const updatedBookings = db.bookings.map(b => {
+                    if (b.bookingId === paymentModal.bookingId) {
+                        return { ...b, status: "Paid" };
+                    }
+                    return b;
+                });
+                saveTable("bookings", updatedBookings);
+
+                // Add payment record (matches all ERD columns: bookingId, cancelReason, paymentId, status, createAt, paidAt, amount)
+                const newPay = {
+                    paymentId: "P" + (db.payments.length + 1).toString().padStart(3, "0"),
+                    bookingId: paymentModal.bookingId,
+                    amount: paymentModal.finalPrice,
+                    status: "Paid",
+                    createAt: new Date().toISOString(),
+                    paidAt: new Date().toISOString(),
+                    cancelReason: null
+                };
+                saveTable("payments", [...db.payments, newPay]);
+
+                // Award points
+                const earnedPoints = Math.floor(paymentModal.finalPrice / 10000);
+                const customer = db.customers.find(c => c.customerId === paymentModal.customerId);
+                const updatedCustomers = db.customers.map(c => {
+                    if (c.customerId === paymentModal.customerId) {
+                        const newPts = c.pointBalance + earnedPoints;
+                        let newTier = c.tierId;
+                        const goldTier = db.tiers.find(t => t.tierName === "Gold");
+                        const silverTier = db.tiers.find(t => t.tierName === "Silver");
+                        const platTier = db.tiers.find(t => t.tierName === "Platinum");
+                        if (newPts >= platTier.minRankingBalance) newTier = platTier.tierId;
+                        else if (newPts >= goldTier.minRankingBalance) newTier = goldTier.tierId;
+                        else if (newPts >= silverTier.minRankingBalance) newTier = silverTier.tierId;
+                        return { ...c, pointBalance: newPts, tierId: newTier };
+                    }
+                    return c;
+                });
+                saveTable("customers", updatedCustomers);
+
+                // Log points transaction (with CustomercusId, Reward_RedemptionredeemptionId, points, createDate, amount)
+                const newTrans = {
+                    transactionId: "LT" + (db.loyaltyTransactions.length + 1).toString().padStart(3, "0"),
+                    CustomercusId: paymentModal.customerId,
+                    customerId: paymentModal.customerId,
+                    bookingId: paymentModal.bookingId,
+                    Reward_RedemptionredeemptionId: null,
+                    points: earnedPoints,
+                    createDate: new Date().toISOString(),
+                    amount: earnedPoints
+                };
+                saveTable("loyaltyTransactions", [...db.loyaltyTransactions, newTrans]);
+
+                if (paymentModal.voucherId) {
+                    const updatedRed = db.redemptions.map(r => {
+                        if (r.redemptionId === paymentModal.voucherId) {
+                            return { ...r, status: "Used", useAt: new Date().toISOString() };
+                        }
+                        return r;
+                    });
+                    saveTable("redemptions", updatedRed);
+                }
+
+                alert(`Thanh toán thành công! Bạn được cộng +${earnedPoints} điểm loyalty.`);
+                setPaymentModal(null);
+                setCurrentUser(prev => ({
+                    ...prev,
+                    customer: updatedCustomers.find(c => c.accountId === prev.accountId)
+                }));
+            };
+
+            // Cancel booking logic
+            const cancelBooking = (booking, reason) => {
+                const scheduleDate = new Date(booking.scheduleAt);
+                const now = new Date();
+                const diffMs = scheduleDate - now;
+                const diffHrs = diffMs / (1000 * 60 * 60);
+
+                if (diffHrs < 1.0) {
+                    alert("Không thể tự hủy lịch hẹn trước giờ hẹn dưới 1 tiếng!");
+                    return;
+                }
+
+                const updatedBookings = db.bookings.map(b => {
+                    if (b.bookingId === booking.bookingId) {
+                        return { ...b, status: "Cancelled", cancelledAt: new Date().toISOString(), cancelReason: reason, cancelReason2: reason, cancelledBy: "Customer" };
+                    }
+                    return b;
+                });
+                saveTable("bookings", updatedBookings);
+                
+                const updatedQueue = db.queue.map(q => {
+                    if (q.bookingId === booking.bookingId) {
+                        return { ...q, queueStatus: "Cancelled" };
+                    }
+                    return q;
+                });
+                saveTable("queue", updatedQueue);
+
+                alert("Hủy lịch thành công!");
+            };
+
+            // Make Redeem Reward
+            const redeemReward = (reward) => {
+                const cust = currentUser.customer;
+                if (cust.pointBalance < reward.pointCost) {
+                    alert("Bạn không đủ điểm để đổi phần thưởng này!");
+                    return;
+                }
+
+                // Deduct points
+                const updatedCustomers = db.customers.map(c => {
+                    if (c.customerId === cust.customerId) {
+                        return { ...c, pointBalance: c.pointBalance - reward.pointCost };
+                    }
+                    return c;
+                });
+                saveTable("customers", updatedCustomers);
+
+                const newRedId = "RDM" + (db.redemptions.length + 1).toString().padStart(3, "0");
+                const newRed = {
+                    redemptionId: newRedId,
+                    customerId: cust.customerId,
+                    rewardId: reward.rewardId,
+                    status: "Active",
+                    useAt: null
+                };
+                saveTable("redemptions", [...db.redemptions, newRed]);
+
+                const newTrans = {
+                    transactionId: "LT" + (db.loyaltyTransactions.length + 1).toString().padStart(3, "0"),
+                    CustomercusId: cust.customerId,
+                    customerId: cust.customerId,
+                    bookingId: null,
+                    Reward_RedemptionredeemptionId: newRedId,
+                    points: -reward.pointCost,
+                    createDate: new Date().toISOString(),
+                    amount: -reward.pointCost
+                };
+                saveTable("loyaltyTransactions", [...db.loyaltyTransactions, newTrans]);
+
+                alert(`Đổi thưởng thành công! Voucher '${reward.rewardName}' đã được thêm vào ví của bạn.`);
+                setCurrentUser(prev => ({
+                    ...prev,
+                    customer: updatedCustomers.find(c => c.accountId === prev.accountId)
+                }));
+            };
+
+            // Admin: Update Wash Queue State
+            const updateQueueStatus = (queueItem, nextStatus) => {
+                const updatedQueue = db.queue.map(q => {
+                    if (q.queueId === queueItem.queueId) {
+                        return { ...q, queueStatus: nextStatus };
+                    }
+                    return q;
+                });
+                saveTable("queue", updatedQueue);
+
+                const updatedBookings = db.bookings.map(b => {
+                    if (b.bookingId === queueItem.bookingId) {
+                        const updates = { status: nextStatus };
+                        if (nextStatus === "Washing") updates.washingAt = new Date().toISOString();
+                        if (nextStatus === "Completed") {
+                            updates.completeAt = new Date().toISOString();
+                            setInvoiceModal({ ...b, ...updates });
+                        }
+                        return { ...b, ...updates };
+                    }
+                    return b;
+                });
+                saveTable("bookings", updatedBookings);
+            };
+
+            // Admin: Process Cash/Card Checkout Payment
+            const confirmCheckoutPayment = (bookingId, finalAmount, method) => {
+                const updatedBookings = db.bookings.map(b => {
+                    if (b.bookingId === bookingId) {
+                        return { ...b, status: "Paid" };
+                    }
+                    return b;
+                });
+                saveTable("bookings", updatedBookings);
+
+                const updatedQueue = db.queue.map(q => {
+                    if (q.bookingId === bookingId) {
+                        return { ...q, queueStatus: "Paid" };
+                    }
+                    return q;
+                });
+                saveTable("queue", updatedQueue);
+
+                const newPay = {
+                    paymentId: "P" + (db.payments.length + 1).toString().padStart(3, "0"),
+                    bookingId: bookingId,
+                    amount: finalAmount,
+                    status: "Paid",
+                    createAt: new Date().toISOString(),
+                    paidAt: new Date().toISOString(),
+                    cancelReason: null
+                };
+                saveTable("payments", [...db.payments, newPay]);
+
+                const booking = db.bookings.find(b => b.bookingId === bookingId);
+                const earnedPoints = Math.floor(finalAmount / 10000);
+                const updatedCustomers = db.customers.map(c => {
+                    if (c.customerId === booking.customerId) {
+                        const newPts = c.pointBalance + earnedPoints;
+                        let newTier = c.tierId;
+                        const goldTier = db.tiers.find(t => t.tierName === "Gold");
+                        const silverTier = db.tiers.find(t => t.tierName === "Silver");
+                        const platTier = db.tiers.find(t => t.tierName === "Platinum");
+                        if (newPts >= platTier.minRankingBalance) newTier = platTier.tierId;
+                        else if (newPts >= goldTier.minRankingBalance) newTier = goldTier.tierId;
+                        else if (newPts >= silverTier.minRankingBalance) newTier = silverTier.tierId;
+                        return { ...c, pointBalance: newPts, tierId: newTier };
+                    }
+                    return c;
+                });
+                saveTable("customers", updatedCustomers);
+
+                const newTrans = {
+                    transactionId: "LT" + (db.loyaltyTransactions.length + 1).toString().padStart(3, "0"),
+                    CustomercusId: booking.customerId,
+                    customerId: booking.customerId,
+                    bookingId: bookingId,
+                    Reward_RedemptionredeemptionId: null,
+                    points: earnedPoints,
+                    createDate: new Date().toISOString(),
+                    amount: earnedPoints
+                };
+                saveTable("loyaltyTransactions", [...db.loyaltyTransactions, newTrans]);
+
+                alert(`Thanh toán hoàn tất bằng phương thức: ${method}! +${earnedPoints} điểm đã được tích cho khách hàng.`);
+                setInvoiceModal(null);
+            };
+
+            // Admin: Trigger manual tier review
+            const runManualTierReview = () => {
+                const updatedCustomers = db.customers.map(c => {
+                    let newTier = c.tierId;
+                    const pts = c.pointBalance;
+                    
+                    const goldTier = db.tiers.find(t => t.tierName === "Gold");
+                    const silverTier = db.tiers.find(t => t.tierName === "Silver");
+                    const platTier = db.tiers.find(t => t.tierName === "Platinum");
+                    const memberTier = db.tiers.find(t => t.tierName === "Member");
+                    
+                    if (pts >= platTier.minRankingBalance) newTier = platTier.tierId;
+                    else if (pts >= goldTier.minRankingBalance) newTier = goldTier.tierId;
+                    else if (pts >= silverTier.minRankingBalance) newTier = silverTier.tierId;
+                    else newTier = memberTier.tierId;
+                    
+                    return { ...c, tierId: newTier };
+                });
+                saveTable("customers", updatedCustomers);
+                alert("Đã hoàn thành đánh giá lại toàn bộ hạng thành viên khách hàng!");
+            };
+
+            // Handle Book a wash appointment
+            const submitBooking = () => {
+                const { vehicleId, date, time, packageId, addOns, voucherId } = newBooking;
+                if (!vehicleId || !date || !time || !packageId) {
+                    alert("Hãy nhập đầy đủ thông tin đặt lịch!");
+                    return;
+                }
+
+                const targetTime = `${date}T${time}`;
+                const slotsCount = db.bookings.filter(b => b.scheduleAt === targetTime && b.status !== 'Cancelled').length;
+                if (slotsCount >= 3) {
+                    alert("Rất tiếc! Khe thời gian này đã hết chỗ.");
+                    return;
+                }
+
+                const costs = getBookingCosts(packageId, addOns);
+
+                const newBookId = "B" + (db.bookings.length + 1).toString().padStart(3, "0");
+                const newB = {
+                    bookingId: newBookId,
+                    customerId: currentUser.customer.customerId,
+                    vehicleId,
+                    scheduleAt: targetTime,
+                    status: "Pending",
+                    basePrice: costs.base,
+                    finalPrice: costs.final,
+                    createAt: new Date().toISOString(),
+                    checkInAt: null,
+                    washingAt: null,
+                    completeAt: null,
+                    cancelledAt: null,
+                    cancelReason: null,
+                    cancelReason2: null,
+                    cancelledBy: null,
+                    tierId: currentUser.customer.tierId,
+                    voucherId: voucherId || null,
+                    queueId: null
+                };
+
+                const updatedBookings = [...db.bookings, newB];
+                saveTable("bookings", updatedBookings);
+
+                const newBS = {
+                    bookingServiceId: "BS" + (db.bookingServices.length + 1).toString().padStart(3, "0"),
+                    bookingId: newBookId,
+                    serviceId: packageId
+                };
+                const updatedBS = [...db.bookingServices, newBS];
+                addOns.forEach((addId, idx) => {
+                    updatedBS.push({
+                        bookingServiceId: "BS" + (db.bookingServices.length + 2 + idx).toString().padStart(3, "0"),
+                        bookingId: newBookId,
+                        serviceId: addId
+                    });
+                });
+                saveTable("bookingServices", updatedBS);
+
+                alert("Đặt lịch rửa xe thành công!");
+                setNewBooking({ vehicleId: "", date: "", time: "", packageId: "", addOns: [], voucherId: "" });
+                setBookingStep(1);
+                setActiveCustomerSubTab("dashboard");
+            };
+
+            const getCustomerName = (cId) => {
+                const c = db.customers?.find(x => x.customerId === cId);
+                const a = db.accounts?.find(x => x.accountId === c?.accountId);
+                return a ? a.fullName : "Khách vãng lai";
+            };
+
+            const getVehiclePlate = (vId) => {
+                const v = db.vehicles?.find(x => x.vehicleId === vId);
+                return v ? `${v.licensePlate} (${v.brand} ${v.model})` : "N/A";
+            };
+
+            const formatVnd = (num) => {
+                return num ? num.toLocaleString('vi-VN') + " đ" : "0 đ";
+            };
+
+            return (
+                <div className="min-h-screen flex flex-col">
+                    {/* --- HEADER --- */}
+                    <header className="glass-card sticky top-0 z-50 px-6 py-4 flex justify-between items-center border-b border-gray-800">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-xl bg-cyan-500 flex items-center justify-center shadow-lg shadow-cyan-500/35">
+                                <i data-lucide="waves" className="text-white w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <h1 className="text-lg font-bold text-white tracking-wide">AutoWash Pro</h1>
+                                <p className="text-xs text-cyan-400 font-medium font-bold uppercase tracking-wider">ERD Synchronized</p>
+                            </div>
+                        </div>
+
+                        {/* Navigation Tabs (Simulated Roles) */}
+                        <div className="flex gap-1 bg-brand-darker p-1 rounded-xl border border-gray-800">
+                            <button 
+                                onClick={() => setRoleTab("customer")} 
+                                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 ${roleTab === 'customer' ? 'bg-cyan-500 text-white shadow-md' : 'text-gray-400 hover:text-gray-200'}`}>
+                                Customer Portal
+                            </button>
+                            <button 
+                                onClick={() => setRoleTab("admin")} 
+                                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 ${roleTab === 'admin' ? 'bg-violet-600 text-white shadow-md' : 'text-gray-400 hover:text-gray-200'}`}>
+                                Admin Portal
+                            </button>
+                            <button 
+                                onClick={() => setRoleTab("db-inspector")} 
+                                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 ${roleTab === 'db-inspector' ? 'bg-gray-700 text-white shadow-md' : 'text-gray-400 hover:text-gray-200'}`}>
+                                DB Inspector
+                            </button>
+                        </div>
+                    </header>
+
+                    {/* --- MAIN PAGE CONTENT --- */}
+                    <main className="flex-1 p-6 md:p-10 max-w-7xl w-full mx-auto">
+                        
+                        {!isLoggedIn && roleTab !== 'db-inspector' ? (
+                            <div className="max-w-md mx-auto my-12 glass-card rounded-2xl p-8 border border-gray-800 shadow-2xl">
+                                <h2 className="text-2xl font-bold text-white text-center mb-6">
+                                    {authMode === 'login' ? 'Đăng Nhập' : 'Đăng Ký Tài Khoản'}
+                                </h2>
+                                
+                                {authMode === 'login' ? (
+                                    <form onSubmit={(e) => { e.preventDefault(); handleLogin(e.target.email.value, e.target.password.value); }}>
+                                        <div className="mb-4">
+                                            <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Email Đăng Nhập</label>
+                                            <input required name="email" type="email" placeholder="customer@autowash.com" className="w-full bg-brand-darker border border-gray-800 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none transition-all duration-300" />
+                                        </div>
+                                        <div className="mb-6">
+                                            <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Mật Khẩu</label>
+                                            <input required name="password" type="password" placeholder="••••••••" className="w-full bg-brand-darker border border-gray-800 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none transition-all duration-300" />
+                                        </div>
+                                        <button type="submit" className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-cyan-500/20 transition-all duration-300 mb-4">
+                                            Đăng Nhập
+                                        </button>
+                                        <div className="text-center text-sm text-gray-400">
+                                            Chưa có tài khoản? <a href="#" onClick={() => setAuthMode("register")} className="text-cyan-400 hover:underline">Đăng ký ngay</a>
+                                        </div>
+                                        <div className="mt-6 border-t border-gray-800 pt-4 text-xs text-gray-500">
+                                            <p className="font-semibold text-gray-400">Tài khoản demo:</p>
+                                            <p className="mt-1">🔑 Customer: customer@autowash.com / customer123</p>
+                                            <p>🔑 Admin: admin@autowash.com / admin123</p>
+                                        </div>
+                                    </form>
+                                ) : (
+                                    <form onSubmit={(e) => { 
+                                        e.preventDefault(); 
+                                        triggerOtp("register", { 
+                                            fullName: e.target.fullName.value, 
+                                            email: e.target.email.value, 
+                                            password: e.target.password.value 
+                                        }); 
+                                    }}>
+                                        <div className="mb-4">
+                                            <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Họ & Tên</label>
+                                            <input required name="fullName" placeholder="Nguyễn Văn A" className="w-full bg-brand-darker border border-gray-800 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none transition-all duration-300" />
+                                        </div>
+                                        <div className="mb-4">
+                                            <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Email</label>
+                                            <input required name="email" type="email" placeholder="example@gmail.com" className="w-full bg-brand-darker border border-gray-800 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none transition-all duration-300" />
+                                        </div>
+                                        <div className="mb-6">
+                                            <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Mật Khẩu</label>
+                                            <input required name="password" type="password" placeholder="••••••••" className="w-full bg-brand-darker border border-gray-800 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none transition-all duration-300" />
+                                        </div>
+                                        <button type="submit" className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-cyan-500/20 transition-all duration-300 mb-4">
+                                            Xác Thực Đăng Ký (Gửi OTP)
+                                        </button>
+                                        <div className="text-center text-sm text-gray-400">
+                                            Đã có tài khoản? <a href="#" onClick={() => setAuthMode("login")} className="text-cyan-400 hover:underline">Đăng nhập</a>
+                                        </div>
+                                    </form>
+                                )}
+                            </div>
+                        ) : null}
+
+                        {/* --- CUSTOMER PORTAL VIEW --- */}
+                        {isLoggedIn && roleTab === 'customer' && currentUser.role === 'Customer' ? (
+                            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                                <div className="lg:col-span-1 glass-card rounded-2xl p-4 border border-gray-800 flex flex-col gap-2">
+                                    <div className="p-4 border-b border-gray-800 mb-2 text-center lg:text-left">
+                                        <h3 className="font-bold text-white text-base">{currentUser.fullName}</h3>
+                                        <p className="text-xs text-gray-400 mt-1">{currentUser.email}</p>
+                                        {currentUser.customer && (
+                                            <span className="inline-block mt-3 bg-cyan-950 text-cyan-400 text-xs px-2.5 py-1 rounded-full font-bold border border-cyan-800">
+                                                Tier: {db.tiers?.find(t => t.tierId === currentUser.customer.tierId)?.tierName}
+                                            </span>
+                                        )}
+                                    </div>
+                                    
+                                    <button onClick={() => setActiveCustomerSubTab("dashboard")} className={`w-full text-left px-4 py-3 rounded-xl text-sm font-semibold flex items-center gap-3 transition-all duration-300 ${activeCustomerSubTab === 'dashboard' ? 'bg-cyan-950/50 text-cyan-400 border border-cyan-900' : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800/30'}`}>
+                                        <i data-lucide="layout-dashboard" className="w-5 h-5"></i>
+                                        Dashboard
+                                    </button>
+                                    <button onClick={() => setActiveCustomerSubTab("booking")} className={`w-full text-left px-4 py-3 rounded-xl text-sm font-semibold flex items-center gap-3 transition-all duration-300 ${activeCustomerSubTab === 'booking' ? 'bg-cyan-950/50 text-cyan-400 border border-cyan-900' : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800/30'}`}>
+                                        <i data-lucide="calendar" className="w-5 h-5"></i>
+                                        Đặt Lịch Rửa Xe
+                                    </button>
+                                    <button onClick={() => setActiveCustomerSubTab("vehicles")} className={`w-full text-left px-4 py-3 rounded-xl text-sm font-semibold flex items-center gap-3 transition-all duration-300 ${activeCustomerSubTab === 'vehicles' ? 'bg-cyan-950/50 text-cyan-400 border border-cyan-900' : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800/30'}`}>
+                                        <i data-lucide="bike" className="w-5 h-5"></i>
+                                        Quản Lý Xe
+                                    </button>
+                                    <button onClick={() => setActiveCustomerSubTab("rewards")} className={`w-full text-left px-4 py-3 rounded-xl text-sm font-semibold flex items-center gap-3 transition-all duration-300 ${activeCustomerSubTab === 'rewards' ? 'bg-cyan-950/50 text-cyan-400 border border-cyan-900' : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800/30'}`}>
+                                        <i data-lucide="gift" className="w-5 h-5"></i>
+                                        Đổi Thưởng
+                                    </button>
+                                    <button onClick={() => setActiveCustomerSubTab("profile")} className={`w-full text-left px-4 py-3 rounded-xl text-sm font-semibold flex items-center gap-3 transition-all duration-300 ${activeCustomerSubTab === 'profile' ? 'bg-cyan-950/50 text-cyan-400 border border-cyan-900' : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800/30'}`}>
+                                        <i data-lucide="user" className="w-5 h-5"></i>
+                                        Hồ Sơ Cá Nhân
+                                    </button>
+                                    
+                                    <button onClick={handleLogout} className="w-full text-left px-4 py-3 rounded-xl text-sm font-semibold text-rose-400 hover:bg-rose-950/20 hover:text-rose-300 flex items-center gap-3 transition-all duration-300 mt-auto">
+                                        <i data-lucide="log-out" className="w-5 h-5"></i>
+                                        Đăng Xuất
+                                    </button>
+                                </div>
+
+                                <div className="lg:col-span-3 flex flex-col gap-6">
+                                    {activeCustomerSubTab === 'dashboard' && (
+                                        <div className="flex flex-col gap-6">
+                                            <div className="glass-card rounded-2xl p-6 border border-gray-800 flex flex-col md:flex-row justify-between items-center gap-6">
+                                                <div>
+                                                    <h2 className="text-xl font-bold text-white">Thành Viên {db.tiers?.find(t => t.tierId === currentUser.customer.tierId)?.tierName}</h2>
+                                                    <p className="text-sm text-gray-400 mt-1">Tích lũy điểm để thăng hạng nhận chiết khấu rửa xe hấp dẫn.</p>
+                                                    <div className="mt-4 flex items-center gap-4">
+                                                        <div className="text-3xl font-extrabold text-cyan-400">{currentUser.customer.pointBalance} Pts</div>
+                                                        <div className="text-xs text-gray-500 border-l border-gray-800 pl-4">
+                                                            Hệ số tích điểm: {db.tiers?.find(t => t.tierId === currentUser.customer.tierId)?.pointMultiplier}x<br />
+                                                            Chiết khấu cố định: {db.tiers?.find(t => t.tierId === currentUser.customer.tierId)?.discountPercent}%
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="w-full md:w-64 flex flex-col gap-2">
+                                                    <div className="flex justify-between text-xs font-semibold uppercase tracking-wider text-gray-400">
+                                                        <span>Tiến Trình Thăng Hạng</span>
+                                                        <span>{currentUser.customer.pointBalance} / 500 Pts</span>
+                                                    </div>
+                                                    <div className="w-full h-3 bg-brand-darker rounded-full overflow-hidden border border-gray-800">
+                                                        <div className="h-full bg-gradient-to-r from-cyan-500 to-indigo-500" style={{ width: `${Math.min(100, (currentUser.customer.pointBalance / 500) * 100)}%` }}></div>
+                                                    </div>
+                                                    <span className="text-[10px] text-gray-500 text-right">Platinum bắt đầu từ 500 Pts</span>
+                                                </div>
+                                            </div>
+
+                                            <div className="glass-card rounded-2xl p-6 border border-gray-800">
+                                                <h3 className="text-base font-bold text-white mb-4 flex items-center gap-2">
+                                                    <i data-lucide="clock" className="w-5 h-5 text-cyan-400"></i> Lịch Hẹn Rửa Xe
+                                                </h3>
+                                                
+                                                {db.bookings?.filter(b => b.customerId === currentUser.customer.customerId).length === 0 ? (
+                                                    <p className="text-gray-500 text-sm py-4 text-center">Bạn chưa có lịch hẹn rửa xe nào. Hãy đặt ngay!</p>
+                                                ) : (
+                                                    <div className="overflow-x-auto">
+                                                        <table className="w-full text-left text-sm">
+                                                            <thead>
+                                                                <tr className="border-b border-gray-800 text-gray-400 text-xs font-bold uppercase tracking-wider">
+                                                                    <th className="pb-3">Mã Đặt</th>
+                                                                    <th className="pb-3">Xe Máy</th>
+                                                                    <th className="pb-3">Giờ Hẹn</th>
+                                                                    <th className="pb-3">Giá Sau Cùng</th>
+                                                                    <th className="pb-3">Trạng Thái</th>
+                                                                    <th className="pb-3 text-right">Hành Động</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody className="divide-y divide-gray-800/40">
+                                                                {db.bookings?.filter(b => b.customerId === currentUser.customer.customerId).map(b => (
+                                                                    <tr key={b.bookingId} className="text-gray-300">
+                                                                        <td className="py-4 font-bold text-white">{b.bookingId}</td>
+                                                                        <td className="py-4">{getVehiclePlate(b.vehicleId)}</td>
+                                                                        <td className="py-4">{b.scheduleAt.replace('T', ' ')}</td>
+                                                                        <td className="py-4 text-cyan-400 font-semibold">{formatVnd(b.finalPrice)}</td>
+                                                                        <td className="py-4">
+                                                                            <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-bold ${
+                                                                                b.status === 'Paid' ? 'bg-emerald-950 text-emerald-400 border border-emerald-900' :
+                                                                                b.status === 'Pending' ? 'bg-amber-950 text-amber-400 border border-amber-900' :
+                                                                                b.status === 'Washing' ? 'bg-cyan-950 text-cyan-400 border border-cyan-900' :
+                                                                                b.status === 'Completed' ? 'bg-indigo-950 text-indigo-400 border border-indigo-900' :
+                                                                                b.status === 'Cancelled' ? 'bg-rose-950 text-rose-400 border border-rose-900' :
+                                                                                'bg-gray-800 text-gray-400'
+                                                                            }`}>
+                                                                                {b.status}
+                                                                            </span>
+                                                                        </td>
+                                                                        <td className="py-4 text-right flex justify-end gap-2">
+                                                                            {b.status === 'Pending' && (
+                                                                                <button onClick={() => payBookingOnline(b)} className="bg-cyan-500 hover:bg-cyan-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow transition-all duration-300">
+                                                                                    Thanh Toán Online
+                                                                                </button>
+                                                                            )}
+                                                                            {(b.status === 'Pending' || b.status === 'Confirmed') && (
+                                                                                <button onClick={() => {
+                                                                                    const r = prompt("Nhập lý do hủy lịch:");
+                                                                                    if (r) cancelBooking(b, r);
+                                                                                }} className="bg-rose-950 hover:bg-rose-900 text-rose-400 text-xs font-bold px-3 py-1.5 rounded-lg border border-rose-900 transition-all duration-300">
+                                                                                    Hủy Lịch
+                                                                                </button>
+                                                                            )}
+                                                                        </td>
+                                                                    </tr>
+                                                                ))}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Subtab: Booking Wizard */}
+                                    {activeCustomerSubTab === 'booking' && (
+                                        <div className="glass-card rounded-2xl p-6 border border-gray-800">
+                                            <h3 className="text-lg font-bold text-white mb-6">Đặt Lịch Rửa Xe</h3>
+                                            
+                                            <div className="flex justify-between items-center mb-8 bg-brand-darker p-4 rounded-xl border border-gray-800">
+                                                <div className={`text-xs font-bold flex items-center gap-2 ${bookingStep >= 1 ? 'text-cyan-400' : 'text-gray-500'}`}>
+                                                    <span className="w-5 h-5 rounded-full bg-cyan-950 border border-cyan-800 text-center leading-4">1</span> Chọn Xe & Giờ
+                                                </div>
+                                                <i data-lucide="chevron-right" className="text-gray-700 w-4 h-4"></i>
+                                                <div className={`text-xs font-bold flex items-center gap-2 ${bookingStep >= 2 ? 'text-cyan-400' : 'text-gray-500'}`}>
+                                                    <span className="w-5 h-5 rounded-full bg-cyan-950 border border-cyan-800 text-center leading-4">2</span> Chọn Gói Rửa
+                                                </div>
+                                                <i data-lucide="chevron-right" className="text-gray-700 w-4 h-4"></i>
+                                                <div className={`text-xs font-bold flex items-center gap-2 ${bookingStep >= 3 ? 'text-cyan-400' : 'text-gray-500'}`}>
+                                                    <span className="w-5 h-5 rounded-full bg-cyan-950 border border-cyan-800 text-center leading-4">3</span> Chiết Khấu & Xác Nhận
+                                                </div>
+                                            </div>
+
+                                            {bookingStep === 1 && (
+                                                <div className="flex flex-col gap-4">
+                                                    <div>
+                                                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Chọn Xe Cần Rửa</label>
+                                                        <select value={newBooking.vehicleId} onChange={(e) => setNewBooking(prev => ({ ...prev, vehicleId: e.target.value }))} className="w-full bg-brand-darker border border-gray-800 rounded-xl px-4 py-3 text-white outline-none">
+                                                            <option value="">-- Chọn xe đã đăng ký --</option>
+                                                            {db.vehicles?.filter(v => v.customerId === currentUser.customer.customerId).map(v => (
+                                                                <option key={v.vehicleId} value={v.vehicleId}>{v.licensePlate} ({v.brand} {v.model})</option>
+                                                            ))}
+                                                        </select>
+                                                        {db.vehicles?.filter(v => v.customerId === currentUser.customer.customerId).length === 0 && (
+                                                            <span className="text-xs text-rose-400 mt-1 block">Bạn chưa đăng ký xe! Hãy sang tab "Quản Lý Xe" để thêm xe.</span>
+                                                        )}
+                                                    </div>
+
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        <div>
+                                                            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Chọn Ngày</label>
+                                                            <input type="date" value={newBooking.date} onChange={(e) => setNewBooking(prev => ({ ...prev, date: e.target.value }))} className="w-full bg-brand-darker border border-gray-800 rounded-xl px-4 py-3 text-white outline-none" />
+                                                        </div>
+                                                        <div>
+                                                            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Chọn Khung Giờ</label>
+                                                            <select value={newBooking.time} onChange={(e) => setNewBooking(prev => ({ ...prev, time: e.target.value }))} className="w-full bg-brand-darker border border-gray-800 rounded-xl px-4 py-3 text-white outline-none">
+                                                                <option value="">-- Chọn khe giờ rửa --</option>
+                                                                <option value="08:00">08:00 - 09:00</option>
+                                                                <option value="09:00">09:00 - 10:00</option>
+                                                                <option value="10:00">10:00 - 11:00</option>
+                                                                <option value="14:00">14:00 - 15:00</option>
+                                                                <option value="15:00">15:00 - 16:00</option>
+                                                                <option value="16:00">16:00 - 17:00</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+
+                                                    <button onClick={() => {
+                                                        if (!newBooking.vehicleId || !newBooking.date || !newBooking.time) {
+                                                            alert("Hãy điền đầy đủ thông tin!");
+                                                            return;
+                                                        }
+                                                        setBookingStep(2);
+                                                    }} className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 rounded-xl transition-all duration-300 mt-4">
+                                                        Tiếp Tục (Chọn Gói Dịch Vụ)
+                                                    </button>
+                                                </div>
+                                            )}
+
+                                            {bookingStep === 2 && (
+                                                <div className="flex flex-col gap-6">
+                                                    <div>
+                                                        <h4 className="text-sm font-bold text-white mb-3 uppercase tracking-wide text-gray-400">Chọn Gói Rửa Xe Chính</h4>
+                                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                                            {db.services?.filter(s => s.category === 'Wash Package').map(s => (
+                                                                <div 
+                                                                    key={s.serviceId} 
+                                                                    onClick={() => setNewBooking(prev => ({ ...prev, packageId: s.serviceId }))}
+                                                                    className={`p-4 rounded-xl border cursor-pointer transition-all duration-300 ${newBooking.packageId === s.serviceId ? 'bg-cyan-950/40 border-cyan-500' : 'bg-brand-darker border-gray-800 hover:border-gray-700'}`}>
+                                                                    <div className="font-bold text-white text-base">{s.serviceName}</div>
+                                                                    <div className="text-cyan-400 font-extrabold mt-2">{formatVnd(s.basePrice)}</div>
+                                                                    <div className="text-xs text-gray-500 mt-1">Thời gian rửa: {s.estimateMinutes} phút</div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+
+                                                    <div>
+                                                        <h4 className="text-sm font-bold text-white mb-3 uppercase tracking-wide text-gray-400">Dịch Vụ Add-on Bổ Sung</h4>
+                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                            {db.services?.filter(s => s.category === 'Add-on').map(s => {
+                                                                const checked = newBooking.addOns.includes(s.serviceId);
+                                                                return (
+                                                                    <div 
+                                                                        key={s.serviceId} 
+                                                                        onClick={() => {
+                                                                            setNewBooking(prev => {
+                                                                                const exists = prev.addOns.includes(s.serviceId);
+                                                                                const addOns = exists ? prev.addOns.filter(id => id !== s.serviceId) : [...prev.addOns, s.serviceId];
+                                                                                return { ...prev, addOns };
+                                                                            });
+                                                                        }}
+                                                                        className={`p-4 rounded-xl border cursor-pointer flex justify-between items-center transition-all duration-300 ${checked ? 'bg-cyan-950/40 border-cyan-500' : 'bg-brand-darker border-gray-800 hover:border-gray-700'}`}>
+                                                                        <div>
+                                                                            <div className="font-bold text-white text-sm">{s.serviceName}</div>
+                                                                            <div className="text-xs text-gray-500 mt-0.5">Thời gian: {s.estimateMinutes} phút</div>
+                                                                        </div>
+                                                                        <div className="text-right">
+                                                                            <div className="text-cyan-400 font-bold text-sm">+{formatVnd(s.basePrice)}</div>
+                                                                        </div>
+                                                                    </div>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="flex gap-4">
+                                                        <button onClick={() => setBookingStep(1)} className="w-1/3 bg-gray-800 hover:bg-gray-700 text-white font-bold py-3 rounded-xl transition-all duration-300">
+                                                            Quay Lại
+                                                        </button>
+                                                        <button onClick={() => {
+                                                            if (!newBooking.packageId) {
+                                                                alert("Xin hãy chọn một gói chính!");
+                                                                return;
+                                                            }
+                                                            setBookingStep(3);
+                                                        }} className="w-2/3 bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 rounded-xl transition-all duration-300">
+                                                            Tiếp Tục
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {bookingStep === 3 && (() => {
+                                                const costs = getBookingCosts(newBooking.packageId, newBooking.addOns);
+                                                return (
+                                                    <div className="flex flex-col gap-6">
+                                                        <div className="bg-brand-darker border border-gray-800 p-6 rounded-xl flex flex-col gap-4">
+                                                            <h4 className="font-bold text-white text-base border-b border-gray-800 pb-2">Hóa Đơn Ước Tính</h4>
+                                                            <div className="flex justify-between text-sm">
+                                                                <span className="text-gray-400">Gói chính & add-on:</span>
+                                                                <span className="font-semibold text-white">{formatVnd(costs.base)}</span>
+                                                            </div>
+                                                            <div className="flex justify-between text-sm">
+                                                                <span className="text-gray-400">Chiết khấu hạng ({db.tiers?.find(t => t.tierId === currentUser.customer.tierId)?.tierName}):</span>
+                                                                <span className="font-semibold text-rose-400">-{formatVnd(costs.tierDiscount)}</span>
+                                                            </div>
+                                                            
+                                                            <div>
+                                                                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Áp dụng Voucher giảm giá</label>
+                                                                <select value={newBooking.voucherId} onChange={(e) => setNewBooking(prev => ({ ...prev, voucherId: e.target.value }))} className="w-full bg-brand-darker border border-gray-800 rounded-xl px-4 py-3 text-white outline-none">
+                                                                    <option value="">-- Chọn voucher trong ví --</option>
+                                                                    {db.redemptions?.filter(r => r.customerId === currentUser.customer.customerId && r.status === 'Active').map(r => {
+                                                                        const reward = db.rewards.find(rw => rw.rewardId === r.rewardId);
+                                                                        return (
+                                                                            <option key={r.redemptionId} value={r.redemptionId}>{reward.rewardName}</option>
+                                                                        );
+                                                                    })}
+                                                                </select>
+                                                            </div>
+
+                                                            {costs.voucherDiscount > 0 && (
+                                                                <div className="flex justify-between text-sm">
+                                                                    <span className="text-gray-400">Giảm trừ Voucher:</span>
+                                                                    <span className="font-semibold text-rose-400">-{formatVnd(costs.voucherDiscount)}</span>
+                                                                </div>
+                                                            )}
+
+                                                            <div className="border-t border-gray-800 pt-4 flex justify-between text-base font-bold">
+                                                                <span className="text-white">Giá sau cùng:</span>
+                                                                <span className="text-cyan-400">{formatVnd(costs.final)}</span>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="flex gap-4">
+                                                            <button onClick={() => setBookingStep(2)} className="w-1/3 bg-gray-800 hover:bg-gray-700 text-white font-bold py-3 rounded-xl transition-all duration-300">
+                                                                Quay Lại
+                                                            </button>
+                                                            <button onClick={submitBooking} className="w-2/3 bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 rounded-xl transition-all duration-300 shadow-lg shadow-cyan-500/20">
+                                                                Xác Nhận Đặt Lịch
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })()}
+                                        </div>
+                                    )}
+
+                                    {activeCustomerSubTab === 'vehicles' && (
+                                        <div className="flex flex-col gap-6">
+                                            <div className="glass-card rounded-2xl p-6 border border-gray-800">
+                                                <h3 className="text-base font-bold text-white mb-4">Đăng Ký Xe Máy Mới</h3>
+                                                <form onSubmit={(e) => { e.preventDefault(); triggerOtp("vehicle", vehicleForm); }} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    <div>
+                                                        <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Biển Số Xe</label>
+                                                        <input required value={vehicleForm.licensePlate} onChange={(e) => setVehicleForm(prev => ({ ...prev, licensePlate: e.target.value }))} placeholder="59A-123.45" className="w-full bg-brand-darker border border-gray-800 rounded-xl px-4 py-3 text-white outline-none focus:border-cyan-500" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Tên Xe (Gợi nhớ)</label>
+                                                        <input required value={vehicleForm.vehicleName} onChange={(e) => setVehicleForm(prev => ({ ...prev, vehicleName: e.target.value }))} placeholder="SH Đen" className="w-full bg-brand-darker border border-gray-800 rounded-xl px-4 py-3 text-white outline-none focus:border-cyan-500" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Hãng Xe</label>
+                                                        <input required value={vehicleForm.brand} onChange={(e) => setVehicleForm(prev => ({ ...prev, brand: e.target.value }))} placeholder="Honda" className="w-full bg-brand-darker border border-gray-800 rounded-xl px-4 py-3 text-white outline-none focus:border-cyan-500" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Dòng Xe</label>
+                                                        <input required value={vehicleForm.model} onChange={(e) => setVehicleForm(prev => ({ ...prev, model: e.target.value }))} placeholder="SH 150i" className="w-full bg-brand-darker border border-gray-800 rounded-xl px-4 py-3 text-white outline-none focus:border-cyan-500" />
+                                                    </div>
+                                                    <button type="submit" className="md:col-span-2 bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 rounded-xl transition-all duration-300 mt-2 shadow-lg shadow-cyan-500/20">
+                                                        Xác Thực OTP & Đăng Ký
+                                                    </button>
+                                                </form>
+                                            </div>
+
+                                            <div className="glass-card rounded-2xl p-6 border border-gray-800">
+                                                <h3 className="text-base font-bold text-white mb-4">Danh Sách Xe Của Bạn</h3>
+                                                {db.vehicles?.filter(v => v.customerId === currentUser.customer.customerId).length === 0 ? (
+                                                    <p className="text-gray-500 text-sm py-4 text-center">Bạn chưa liên kết xe.</p>
+                                                ) : (
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        {db.vehicles?.filter(v => v.customerId === currentUser.customer.customerId).map(v => (
+                                                            <div key={v.vehicleId} className="bg-brand-darker border border-gray-800 rounded-xl p-4 flex justify-between items-center">
+                                                                <div>
+                                                                    <div className="font-bold text-white text-base">{v.vehicleName}</div>
+                                                                    <div className="text-sm text-cyan-400 font-semibold mt-1">{v.licensePlate}</div>
+                                                                    <div className="text-xs text-gray-500 mt-0.5">{v.brand} {v.model}</div>
+                                                                </div>
+                                                                <button onClick={() => {
+                                                                    const active = db.bookings.filter(b => b.vehicleId === v.vehicleId && (b.status === 'Pending' || b.status === 'Confirmed' || b.status === 'Washing'));
+                                                                    if (active.length > 0) {
+                                                                        alert("Không thể xóa xe khi đang có lịch đặt trước!");
+                                                                        return;
+                                                                    }
+                                                                    if (confirm("Hủy đăng ký chiếc xe này?")) {
+                                                                        saveTable("vehicles", db.vehicles.filter(x => x.vehicleId !== v.vehicleId));
+                                                                    }
+                                                                }} className="bg-rose-950/20 text-rose-400 hover:bg-rose-950/40 p-2.5 rounded-lg border border-rose-900 transition-all duration-300">
+                                                                    <i data-lucide="trash-2" className="w-5 h-5"></i>
+                                                                </button>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {activeCustomerSubTab === 'rewards' && (
+                                        <div className="flex flex-col gap-6">
+                                            <div className="glass-card rounded-2xl p-6 border border-gray-800 flex justify-between items-center">
+                                                <div>
+                                                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Số dư điểm hiện tại</span>
+                                                    <div className="text-3xl font-extrabold text-cyan-400 mt-1">{currentUser.customer.pointBalance} Pts</div>
+                                                </div>
+                                                <div className="text-right">
+                                                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Số Voucher trong ví</span>
+                                                    <div className="text-3xl font-extrabold text-white mt-1">
+                                                        {db.redemptions?.filter(r => r.customerId === currentUser.customer.customerId && r.status === 'Active').length}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="glass-card rounded-2xl p-6 border border-gray-800">
+                                                <h3 className="text-base font-bold text-white mb-4">Cửa Hàng Đổi Quà</h3>
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    {db.rewards?.map(r => {
+                                                        const userPoints = currentUser.customer.pointBalance;
+                                                        const canRedeem = userPoints >= r.pointCost && r.isActive;
+                                                        return (
+                                                            <div key={r.rewardId} className="bg-brand-darker border border-gray-800 rounded-xl p-4 flex flex-col justify-between gap-4">
+                                                                <div>
+                                                                    <div className="font-bold text-white text-sm">{r.rewardName}</div>
+                                                                    <div className="text-xs text-gray-500 mt-1">Hạng tối thiểu: {db.tiers?.find(t => t.tierId === r.minTierId)?.tierName}</div>
+                                                                </div>
+                                                                <div className="flex justify-between items-center border-t border-gray-800/60 pt-3">
+                                                                    <span className="text-cyan-400 font-extrabold text-base">{r.pointCost} Pts</span>
+                                                                    <button 
+                                                                        disabled={!canRedeem}
+                                                                        onClick={() => redeemReward(r)}
+                                                                        className={`px-4 py-2 rounded-lg text-xs font-bold transition-all duration-300 ${canRedeem ? 'bg-cyan-500 hover:bg-cyan-600 text-white shadow' : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`}>
+                                                                        Đổi Ngay
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {activeCustomerSubTab === 'profile' && (
+                                        <div className="glass-card rounded-2xl p-6 border border-gray-800">
+                                            <h3 className="text-base font-bold text-white mb-6">Thông Tin Tài Khoản</h3>
+                                            <form onSubmit={(e) => {
+                                                e.preventDefault();
+                                                const updatedAccounts = db.accounts.map(a => {
+                                                    if (a.accountId === currentUser.accountId) {
+                                                        const updates = { fullName: profileForm.fullName };
+                                                        if (profileForm.newPassword) {
+                                                            if (profileForm.currentPassword !== a.password) {
+                                                                alert("Sai mật khẩu hiện tại!");
+                                                                return a;
+                                                            }
+                                                            updates.password = profileForm.newPassword;
+                                                        }
+                                                        return { ...a, ...updates };
+                                                    }
+                                                    return a;
+                                                });
+                                                saveTable("accounts", updatedAccounts);
+                                                alert("Cập nhật thông tin thành công!");
+                                            }} className="flex flex-col gap-4">
+                                                <div>
+                                                    <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Họ & Tên</label>
+                                                    <input required value={profileForm.fullName} onChange={(e) => setProfileForm(prev => ({ ...prev, fullName: e.target.value }))} className="w-full bg-brand-darker border border-gray-800 rounded-xl px-4 py-3 text-white outline-none" />
+                                                </div>
+                                                
+                                                <div className="border-t border-gray-800 pt-4 mt-2">
+                                                    <h4 className="text-sm font-bold text-white mb-4">Đổi Mật Khẩu</h4>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        <div>
+                                                            <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Mật Khẩu Hiện Tại</label>
+                                                            <input type="password" value={profileForm.currentPassword} onChange={(e) => setProfileForm(prev => ({ ...prev, currentPassword: e.target.value }))} className="w-full bg-brand-darker border border-gray-800 rounded-xl px-4 py-3 text-white outline-none" />
+                                                        </div>
+                                                        <div>
+                                                            <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Mật Khẩu Mới</label>
+                                                            <input type="password" value={profileForm.newPassword} onChange={(e) => setProfileForm(prev => ({ ...prev, newPassword: e.target.value }))} className="w-full bg-brand-darker border border-gray-800 rounded-xl px-4 py-3 text-white outline-none" />
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <button type="submit" className="bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3.5 rounded-xl transition-all duration-300 mt-4 shadow-lg shadow-cyan-500/25">
+                                                    Lưu Thay Đổi
+                                                </button>
+                                            </form>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        ) : null}
+
+                        {/* --- ADMINISTRATOR PORTAL VIEW --- */}
+                        {isLoggedIn && roleTab === 'admin' && currentUser.role === 'Admin' ? (
+                            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                                <div className="lg:col-span-1 glass-card rounded-2xl p-4 border border-gray-800 flex flex-col gap-2">
+                                    <div className="p-4 border-b border-gray-800 mb-2 text-center lg:text-left">
+                                        <h3 className="font-bold text-white text-base">Dashboard Quản Trị</h3>
+                                        <p className="text-xs text-violet-400 font-semibold mt-1">Quyền hạn: Admin</p>
+                                    </div>
+                                    
+                                    <button onClick={() => setActiveAdminSubTab("queue")} className={`w-full text-left px-4 py-3 rounded-xl text-sm font-semibold flex items-center gap-3 transition-all duration-300 ${activeAdminSubTab === 'queue' ? 'bg-violet-950/50 text-violet-400 border border-violet-900' : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800/30'}`}>
+                                        <i data-lucide="list-todo" className="w-5 h-5"></i>
+                                        Hàng Đợi Rửa Xe
+                                    </button>
+                                    <button onClick={() => setActiveAdminSubTab("bookings")} className={`w-full text-left px-4 py-3 rounded-xl text-sm font-semibold flex items-center gap-3 transition-all duration-300 ${activeAdminSubTab === 'bookings' ? 'bg-violet-950/50 text-violet-400 border border-violet-900' : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800/30'}`}>
+                                        <i data-lucide="calendar-days" className="w-5 h-5"></i>
+                                        Quản Lý Lịch Hẹn
+                                    </button>
+                                    <button onClick={() => setActiveAdminSubTab("customers")} className={`w-full text-left px-4 py-3 rounded-xl text-sm font-semibold flex items-center gap-3 transition-all duration-300 ${activeAdminSubTab === 'customers' ? 'bg-violet-950/50 text-violet-400 border border-violet-900' : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800/30'}`}>
+                                        <i data-lucide="users" className="w-5 h-5"></i>
+                                        Khách Hàng
+                                    </button>
+                                    <button onClick={() => setActiveAdminSubTab("services")} className={`w-full text-left px-4 py-3 rounded-xl text-sm font-semibold flex items-center gap-3 transition-all duration-300 ${activeAdminSubTab === 'services' ? 'bg-violet-950/50 text-violet-400 border border-violet-900' : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800/30'}`}>
+                                        <i data-lucide="pocket-knife" className="w-5 h-5"></i>
+                                        Gói Rửa & Dịch Vụ
+                                    </button>
+                                    <button onClick={() => setActiveAdminSubTab("promotions")} className={`w-full text-left px-4 py-3 rounded-xl text-sm font-semibold flex items-center gap-3 transition-all duration-300 ${activeAdminSubTab === 'promotions' ? 'bg-violet-950/50 text-violet-400 border border-violet-900' : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800/30'}`}>
+                                        <i data-lucide="ticket" className="w-5 h-5"></i>
+                                        Khuyến Mãi & Quà
+                                    </button>
+                                    <button onClick={() => setActiveAdminSubTab("tiers")} className={`w-full text-left px-4 py-3 rounded-xl text-sm font-semibold flex items-center gap-3 transition-all duration-300 ${activeAdminSubTab === 'tiers' ? 'bg-violet-950/50 text-violet-400 border border-violet-900' : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800/30'}`}>
+                                        <i data-lucide="award" className="w-5 h-5"></i>
+                                        Cấu Hình Tiers
+                                    </button>
+                                    <button onClick={() => setActiveAdminSubTab("dashboard")} className={`w-full text-left px-4 py-3 rounded-xl text-sm font-semibold flex items-center gap-3 transition-all duration-300 ${activeAdminSubTab === 'dashboard' ? 'bg-violet-950/50 text-violet-400 border border-violet-900' : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800/30'}`}>
+                                        <i data-lucide="bar-chart-3" className="w-5 h-5"></i>
+                                        Báo Cáo Thống Kê
+                                    </button>
+                                    
+                                    <button onClick={handleLogout} className="w-full text-left px-4 py-3 rounded-xl text-sm font-semibold text-rose-400 hover:bg-rose-950/20 hover:text-rose-300 flex items-center gap-3 transition-all duration-300 mt-auto">
+                                        <i data-lucide="log-out" className="w-5 h-5"></i>
+                                        Đăng Xuất
+                                    </button>
+                                </div>
+
+                                <div className="lg:col-span-3 flex flex-col gap-6">
+                                    {activeAdminSubTab === 'queue' && (
+                                        <div className="glass-card rounded-2xl p-6 border border-gray-800">
+                                            <div className="flex justify-between items-center mb-6">
+                                                <h3 className="text-base font-bold text-white">Hàng Đợi Rửa Xe</h3>
+                                                <button 
+                                                    onClick={() => {
+                                                        const plate = prompt("Nhập Biển Số Xe khách vãng lai:");
+                                                        if (!plate) return;
+                                                        const newVehId = "V" + (db.vehicles.length + 1).toString().padStart(3, "0");
+                                                        const newVeh = { vehicleId: newVehId, customerId: null, licensePlate: plate, brand: "Walk-in", model: "Generic", vehicleName: "Xe vãng lai", registeredAt: new Date().toISOString() };
+                                                        saveTable("vehicles", [...db.vehicles, newVeh]);
+
+                                                        const newBId = "B" + (db.bookings.length + 1).toString().padStart(3, "0");
+                                                        const newB = { bookingId: newBId, customerId: null, vehicleId: newVehId, scheduleAt: new Date().toISOString(), status: "Washing", basePrice: 80000, finalPrice: 80000, createAt: new Date().toISOString(), tierId: "T001", queueId: null, cancelReason2: null };
+                                                        saveTable("bookings", [...db.bookings, newB]);
+
+                                                        const newQId = "Q" + (db.queue.length + 1).toString().padStart(3, "0");
+                                                        const newQ = { queueId: newQId, customerId: null, vehicleId: newVehId, bookingId: newBId, queueStatus: "Washing" };
+                                                        saveTable("queue", [...db.queue, newQ]);
+
+                                                        alert("Đã thêm xe vãng lai trực tiếp vào khoang rửa!");
+                                                    }}
+                                                    className="bg-violet-600 hover:bg-violet-700 text-white font-bold px-4 py-2 rounded-xl text-xs shadow-lg transition-all duration-300">
+                                                    + Khách Vãng Lai
+                                                </button>
+                                            </div>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-5 gap-4 overflow-x-auto">
+                                                {["Waiting", "Assigned", "Washing", "Completed", "Paid"].map(status => {
+                                                    const items = db.queue?.filter(q => q.queueStatus === status) || [];
+                                                    let displayItems = [...items];
+                                                    if (status === "Waiting") {
+                                                        const queuedBookingIds = db.queue?.map(q => q.bookingId) || [];
+                                                        const pendingBookings = db.bookings?.filter(b => (b.status === "Pending" || b.status === "Confirmed") && !queuedBookingIds.includes(b.bookingId)) || [];
+                                                        pendingBookings.forEach(pb => {
+                                                            displayItems.push({
+                                                                queueId: "TEMP_" + pb.bookingId,
+                                                                customerId: pb.customerId,
+                                                                vehicleId: pb.vehicleId,
+                                                                bookingId: pb.bookingId,
+                                                                queueStatus: "Waiting",
+                                                                isBookingOnly: true
+                                                            });
+                                                        });
+                                                    }
+
+                                                    return (
+                                                        <div key={status} className="bg-brand-darker/60 rounded-xl p-3 min-w-[180px] border border-gray-800">
+                                                            <div className="flex justify-between items-center mb-3 border-b border-gray-800 pb-1.5">
+                                                                <span className="font-bold text-xs uppercase tracking-wide text-gray-400">{status}</span>
+                                                                <span className="bg-gray-800 text-gray-300 text-[10px] font-bold px-1.5 py-0.5 rounded-full">{displayItems.length}</span>
+                                                            </div>
+                                                            <div className="flex flex-col gap-2">
+                                                                {displayItems.map(item => (
+                                                                    <div key={item.queueId} className="bg-brand-dark rounded-xl p-3 border border-gray-800 flex flex-col gap-2">
+                                                                        <div className="font-bold text-white text-xs">{getVehiclePlate(item.vehicleId)}</div>
+                                                                        <div className="text-[10px] text-gray-400">{getCustomerName(item.customerId)}</div>
+                                                                        
+                                                                        <div className="mt-1 flex gap-1 justify-end">
+                                                                            {item.queueStatus === 'Waiting' && (
+                                                                                <button onClick={() => {
+                                                                                    if (item.isBookingOnly) {
+                                                                                        const newQId = "Q" + (db.queue.length + 1).toString().padStart(3, "0");
+                                                                                        const newQ = { queueId: newQId, customerId: item.customerId, vehicleId: item.vehicleId, bookingId: item.bookingId, queueStatus: "Assigned" };
+                                                                                        saveTable("queue", [...db.queue, newQ]);
+                                                                                        saveTable("bookings", db.bookings.map(b => b.bookingId === item.bookingId ? { ...b, status: "Confirmed" } : b));
+                                                                                    } else {
+                                                                                        updateQueueStatus(item, "Assigned");
+                                                                                    }
+                                                                                }} className="w-full bg-violet-600/30 text-violet-300 border border-violet-900 text-[10px] font-bold py-1 rounded hover:bg-violet-600/50">
+                                                                                    Duyệt Xếp Lịch
+                                                                                </button>
+                                                                            )}
+                                                                            {item.queueStatus === 'Assigned' && (
+                                                                                <button onClick={() => updateQueueStatus(item, "Washing")} className="w-full bg-cyan-600/30 text-cyan-300 border border-cyan-900 text-[10px] font-bold py-1 rounded hover:bg-cyan-600/50">
+                                                                                    Vào Rửa Xe
+                                                                                </button>
+                                                                            )}
+                                                                            {item.queueStatus === 'Washing' && (
+                                                                                <button onClick={() => updateQueueStatus(item, "Completed")} className="w-full bg-indigo-600/30 text-indigo-300 border border-indigo-900 text-[10px] font-bold py-1 rounded hover:bg-indigo-600/50">
+                                                                                    Rửa Xong
+                                                                                </button>
+                                                                            )}
+                                                                            {item.queueStatus === 'Completed' && (
+                                                                                <button onClick={() => {
+                                                                                    const bookingObj = db.bookings.find(b => b.bookingId === item.bookingId);
+                                                                                    setInvoiceModal(bookingObj);
+                                                                                }} className="w-full bg-emerald-600/30 text-emerald-300 border border-emerald-900 text-[10px] font-bold py-1 rounded hover:bg-emerald-600/50">
+                                                                                    Thu Tiền
+                                                                                </button>
+                                                                            )}
+                                                                        </div>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {activeAdminSubTab === 'bookings' && (
+                                        <div className="glass-card rounded-2xl p-6 border border-gray-800">
+                                            <h3 className="text-base font-bold text-white mb-4">Danh Sách Lịch Hẹn Đặt Trước</h3>
+                                            <div className="overflow-x-auto">
+                                                <table className="w-full text-left text-sm">
+                                                    <thead>
+                                                        <tr className="border-b border-gray-800 text-gray-400 text-xs font-bold uppercase tracking-wider">
+                                                            <th className="pb-3">Khách Hàng</th>
+                                                            <th className="pb-3">Phương Tiện</th>
+                                                            <th className="pb-3">Giờ Hẹn</th>
+                                                            <th className="pb-3">Giá Dự Tính</th>
+                                                            <th className="pb-3">Trạng Thế</th>
+                                                            <th className="pb-3 text-right">Duyệt</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody className="divide-y divide-gray-800/40">
+                                                        {db.bookings?.map(b => (
+                                                            <tr key={b.bookingId} className="text-gray-300">
+                                                                <td className="py-4 font-bold text-white">{getCustomerName(b.customerId)}</td>
+                                                                <td className="py-4">{getVehiclePlate(b.vehicleId)}</td>
+                                                                <td className="py-4">{b.scheduleAt.replace('T', ' ')}</td>
+                                                                <td className="py-4 text-violet-400 font-semibold">{formatVnd(b.finalPrice)}</td>
+                                                                <td className="py-4">
+                                                                    <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold ${
+                                                                        b.status === 'Paid' ? 'bg-emerald-950 text-emerald-400' :
+                                                                        b.status === 'Pending' ? 'bg-amber-950 text-amber-400' :
+                                                                        b.status === 'Washing' ? 'bg-cyan-950 text-cyan-400' :
+                                                                        b.status === 'Cancelled' ? 'bg-rose-950 text-rose-400' :
+                                                                        'bg-gray-800 text-gray-400'
+                                                                    }`}>
+                                                                        {b.status}
+                                                                    </span>
+                                                                </td>
+                                                                <td className="py-4 text-right flex justify-end gap-1.5">
+                                                                    {b.status === 'Pending' && (
+                                                                        <button onClick={() => {
+                                                                            const newQId = "Q" + (db.queue.length + 1).toString().padStart(3, "0");
+                                                                            const newQ = { queueId: newQId, customerId: b.customerId, vehicleId: b.vehicleId, bookingId: b.bookingId, queueStatus: "Assigned" };
+                                                                            saveTable("queue", [...db.queue, newQ]);
+                                                                            saveTable("bookings", db.bookings.map(x => x.bookingId === b.bookingId ? { ...x, status: "Confirmed" } : x));
+                                                                            alert("Đã duyệt đặt lịch!");
+                                                                        }} className="bg-violet-600 hover:bg-violet-700 text-white text-xs px-2.5 py-1 rounded">
+                                                                            Duyệt
+                                                                        </button>
+                                                                    )}
+                                                                    {(b.status === 'Pending' || b.status === 'Confirmed') && (
+                                                                        <button onClick={() => setRescheduleModal(b)} className="bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs px-2.5 py-1 rounded border border-gray-700">
+                                                                            Đổi Giờ
+                                                                        </button>
+                                                                    )}
+                                                                    {(b.status === 'Pending' || b.status === 'Confirmed') && (
+                                                                        <button onClick={() => {
+                                                                            const r = prompt("Nhập lý do hủy lịch:");
+                                                                            if (r) {
+                                                                                saveTable("bookings", db.bookings.map(x => x.bookingId === b.bookingId ? { ...x, status: "Cancelled", cancelledAt: new Date().toISOString(), cancelReason: r, cancelReason2: r, cancelledBy: "Admin" } : x));
+                                                                            }
+                                                                        }} className="bg-rose-950 hover:bg-rose-900 text-rose-400 text-xs px-2.5 py-1 rounded border border-rose-900">
+                                                                            Hủy
+                                                                        </button>
+                                                                    )}
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {activeAdminSubTab === 'customers' && (
+                                        <div className="glass-card rounded-2xl p-6 border border-gray-800">
+                                            <h3 className="text-base font-bold text-white mb-4">Danh Sách Khách Hàng</h3>
+                                            <div className="overflow-x-auto">
+                                                <table className="w-full text-left text-sm">
+                                                    <thead>
+                                                        <tr className="border-b border-gray-800 text-gray-400 text-xs font-bold uppercase tracking-wider">
+                                                            <th className="pb-3">Tên Khách</th>
+                                                            <th className="pb-3">Email</th>
+                                                            <th className="pb-3">Hạng Thành Viên</th>
+                                                            <th className="pb-3">Số Dư Điểm</th>
+                                                            <th className="pb-3 text-right">Điều Chỉnh Điểm</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody className="divide-y divide-gray-800/40">
+                                                        {db.customers?.map(c => {
+                                                            const acc = db.accounts.find(a => a.accountId === c.accountId);
+                                                            const tier = db.tiers.find(t => t.tierId === c.tierId);
+                                                            return (
+                                                                <tr key={c.customerId} className="text-gray-300">
+                                                                    <td className="py-4 font-bold text-white">{acc?.fullName}</td>
+                                                                    <td className="py-4">{acc?.email}</td>
+                                                                    <td className="py-4">
+                                                                        <span className="bg-violet-950 text-violet-400 text-xs font-bold px-2 py-0.5 rounded border border-violet-900">
+                                                                            {tier?.tierName}
+                                                                        </span>
+                                                                    </td>
+                                                                    <td className="py-4 text-cyan-400 font-extrabold text-base">{c.pointBalance} Pts</td>
+                                                                    <td className="py-4 text-right">
+                                                                        <button onClick={() => setAdjustmentModal(c)} className="bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs px-3 py-1.5 rounded border border-gray-700">
+                                                                            Sửa Điểm
+                                                                        </button>
+                                                                    </td>
+                                                                </tr>
+                                                            );
+                                                        })}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {activeAdminSubTab === 'services' && (
+                                        <div className="flex flex-col gap-6">
+                                            <div className="glass-card rounded-2xl p-6 border border-gray-800">
+                                                <h3 className="text-base font-bold text-white mb-4">
+                                                    {serviceForm.serviceId ? "Cập Nhật Dịch Vụ" : "Thêm Dịch Vụ Mới"}
+                                                </h3>
+                                                <form onSubmit={(e) => {
+                                                    e.preventDefault();
+                                                    const { serviceId, serviceName, category, basePrice, estimateMinutes } = serviceForm;
+                                                    if (!serviceName || !basePrice) return;
+                                                    if (serviceId) {
+                                                        const updatedServices = db.services.map(s => s.serviceId === serviceId ? { ...s, serviceName, category, basePrice: Number(basePrice), estimateMinutes: Number(estimateMinutes) } : s);
+                                                        saveTable("services", updatedServices);
+                                                        alert("Cập nhật thành công!");
+                                                    } else {
+                                                        const newSId = "S" + (db.services.length + 1).toString().padStart(3, "0");
+                                                        const newS = { serviceId: newSId, serviceName, category, basePrice: Number(basePrice), estimateMinutes: Number(estimateMinutes) };
+                                                        saveTable("services", [...db.services, newS]);
+                                                        alert("Thêm thành công!");
+                                                    }
+                                                    setServiceForm({ serviceId: "", serviceName: "", category: "Wash Package", basePrice: 0, estimateMinutes: 15 });
+                                                }} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                                                    <div>
+                                                        <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Tên Dịch Vụ</label>
+                                                        <input required value={serviceForm.serviceName} onChange={(e) => setServiceForm(prev => ({ ...prev, serviceName: e.target.value }))} className="w-full bg-brand-darker border border-gray-800 rounded-xl px-4 py-2.5 text-white outline-none" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Phân Nhóm</label>
+                                                        <select value={serviceForm.category} onChange={(e) => setServiceForm(prev => ({ ...prev, category: e.target.value }))} className="w-full bg-brand-darker border border-gray-800 rounded-xl px-4 py-2.5 text-white outline-none">
+                                                            <option value="Wash Package">Wash Package</option>
+                                                            <option value="Add-on">Add-on</option>
+                                                        </select>
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Giá Cơ Bản (đ)</label>
+                                                        <input type="number" required value={serviceForm.basePrice} onChange={(e) => setServiceForm(prev => ({ ...prev, basePrice: e.target.value }))} className="w-full bg-brand-darker border border-gray-800 rounded-xl px-4 py-2.5 text-white outline-none" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Thời Gian (Phút)</label>
+                                                        <input type="number" required value={serviceForm.estimateMinutes} onChange={(e) => setServiceForm(prev => ({ ...prev, estimateMinutes: e.target.value }))} className="w-full bg-brand-darker border border-gray-800 rounded-xl px-4 py-2.5 text-white outline-none" />
+                                                    </div>
+                                                    <div className="md:col-span-4 flex justify-end gap-2 mt-2">
+                                                        <button type="submit" className="bg-violet-600 hover:bg-violet-700 text-white font-bold px-5 py-2.5 rounded-xl text-xs">Lưu Dịch Vụ</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+
+                                            <div className="glass-card rounded-2xl p-6 border border-gray-800">
+                                                <h3 className="text-base font-bold text-white mb-4">Danh Mục Dịch Vụ</h3>
+                                                <div className="overflow-x-auto">
+                                                    <table className="w-full text-left text-sm">
+                                                        <thead>
+                                                            <tr className="border-b border-gray-800 text-gray-400 text-xs font-bold uppercase tracking-wider">
+                                                                <th className="pb-3">Tên Dịch Vụ</th>
+                                                                <th className="pb-3">Phân Loại</th>
+                                                                <th className="pb-3">Giá Cơ Bản</th>
+                                                                <th className="pb-3">Thời Gian</th>
+                                                                <th className="pb-3 text-right">Thao Tác</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody className="divide-y divide-gray-800/40">
+                                                            {db.services?.map(s => (
+                                                                <tr key={s.serviceId} className="text-gray-300">
+                                                                    <td className="py-3 font-bold text-white">{s.serviceName}</td>
+                                                                    <td className="py-3 text-gray-400">{s.category}</td>
+                                                                    <td className="py-3 text-violet-400 font-semibold">{formatVnd(s.basePrice)}</td>
+                                                                    <td className="py-3">{s.estimateMinutes} Phút</td>
+                                                                    <td className="py-3 text-right flex justify-end gap-1.5">
+                                                                        <button onClick={() => setServiceForm(s)} className="bg-violet-950/20 text-violet-400 hover:bg-violet-950/40 p-1.5 rounded border border-violet-900">Sửa</button>
+                                                                        <button onClick={() => {
+                                                                            if (confirm("Xóa?")) {
+                                                                                saveTable("services", db.services.filter(x => x.serviceId !== s.serviceId));
+                                                                            }
+                                                                        }} className="bg-rose-950/20 text-rose-400 hover:bg-rose-950/40 p-1.5 rounded border border-rose-900">Xóa</button>
+                                                                    </td>
+                                                                </tr>
+                                                            ))}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {activeAdminSubTab === 'promotions' && (
+                                        <div className="flex flex-col gap-6">
+                                            <div className="glass-card rounded-2xl p-6 border border-gray-800">
+                                                <h3 className="text-base font-bold text-white mb-4">
+                                                    {rewardForm.rewardId ? "Cập Nhật Quà Tặng" : "Thêm Voucher Quà Tặng"}
+                                                </h3>
+                                                <form onSubmit={(e) => {
+                                                    e.preventDefault();
+                                                    const { rewardId, rewardName, pointCost, minTierId, discountRate, isActive } = rewardForm;
+                                                    if (!rewardName || !pointCost || !discountRate) return;
+                                                    if (rewardId) {
+                                                        const updated = db.rewards.map(r => r.rewardId === rewardId ? { ...r, rewardName, pointCost: Number(pointCost), minTierId, discountRate: Number(discountRate), isActive } : r);
+                                                        saveTable("rewards", updated);
+                                                    } else {
+                                                        const newRId = "R" + (db.rewards.length + 1).toString().padStart(3, "0");
+                                                        const newR = { rewardId: newRId, rewardName, pointCost: Number(pointCost), minTierId, discountRate: Number(discountRate), isActive: true, bookingId: null, cancelReason: null, tierId: minTierId, serviceId: null, validate: 90, stockLimit: 100 };
+                                                        saveTable("rewards", [...db.rewards, newR]);
+                                                    }
+                                                    setRewardForm({ rewardId: "", rewardName: "", pointCost: 0, minTierId: "T001", discountRate: 0, isActive: true, bookingId: null, cancelReason: null, tierId: "T001", serviceId: "", validate: 90, stockLimit: 100 });
+                                                }} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                                                    <div className="md:col-span-2">
+                                                        <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Tên Voucher</label>
+                                                        <input required value={rewardForm.rewardName} onChange={(e) => setRewardForm(prev => ({ ...prev, rewardName: e.target.value }))} className="w-full bg-brand-darker border border-gray-800 rounded-xl px-4 py-2.5 text-white outline-none" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Điểm Đổi</label>
+                                                        <input type="number" required value={rewardForm.pointCost} onChange={(e) => setRewardForm(prev => ({ ...prev, pointCost: e.target.value }))} className="w-full bg-brand-darker border border-gray-800 rounded-xl px-4 py-2.5 text-white outline-none" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Hạng Thành Viên</label>
+                                                        <select value={rewardForm.minTierId} onChange={(e) => setRewardForm(prev => ({ ...prev, minTierId: e.target.value }))} className="w-full bg-brand-darker border border-gray-800 rounded-xl px-4 py-2.5 text-white outline-none">
+                                                            {db.tiers?.map(t => (
+                                                                <option key={t.tierId} value={t.tierId}>{t.tierName}</option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Trị Giá Giảm (đ)</label>
+                                                        <input type="number" required value={rewardForm.discountRate} onChange={(e) => setRewardForm(prev => ({ ...prev, discountRate: e.target.value }))} className="w-full bg-brand-darker border border-gray-800 rounded-xl px-4 py-2.5 text-white outline-none" />
+                                                    </div>
+                                                    <div className="md:col-span-4 flex justify-end gap-2 mt-2">
+                                                        <button type="submit" className="bg-violet-600 hover:bg-violet-700 text-white font-bold px-5 py-2.5 rounded-xl text-xs">Lưu Voucher</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+
+                                            <div className="glass-card rounded-2xl p-6 border border-gray-800">
+                                                <h3 className="text-base font-bold text-white mb-4">Voucher Khuyến Mãi Đang Hoạt Động</h3>
+                                                <div className="overflow-x-auto">
+                                                    <table className="w-full text-left text-sm">
+                                                        <thead>
+                                                            <tr className="border-b border-gray-800 text-gray-400 text-xs font-bold uppercase tracking-wider">
+                                                                <th className="pb-3">Tên Phần Thưởng</th>
+                                                                <th className="pb-3">Hạng Tối Thiểu</th>
+                                                                <th className="pb-3">Giá Điểm Đổi</th>
+                                                                <th className="pb-3">Trị Giá Giảm Giá</th>
+                                                                <th className="pb-3 text-right">Trạng Thái</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody className="divide-y divide-gray-800/40">
+                                                            {db.rewards?.map(r => (
+                                                                <tr key={r.rewardId} className="text-gray-300">
+                                                                    <td className="py-3 font-bold text-white">{r.rewardName}</td>
+                                                                    <td className="py-3 text-gray-400">
+                                                                        {db.tiers?.find(t => t.tierId === r.minTierId)?.tierName}
+                                                                    </td>
+                                                                    <td className="py-3 text-cyan-400 font-bold">{r.pointCost} Pts</td>
+                                                                    <td className="py-3 text-violet-400 font-semibold">{formatVnd(r.discountRate)}</td>
+                                                                    <td className="py-3 text-right">
+                                                                        <button onClick={() => {
+                                                                            const updated = db.rewards.map(x => x.rewardId === r.rewardId ? { ...x, isActive: !x.isActive } : x);
+                                                                            saveTable("rewards", updated);
+                                                                        }} className={`px-2.5 py-1 rounded text-xs font-bold ${r.isActive ? 'bg-emerald-950 text-emerald-400' : 'bg-rose-950 text-rose-400'}`}>
+                                                                            {r.isActive ? "Bật" : "Tắt"}
+                                                                        </button>
+                                                                    </td>
+                                                                </tr>
+                                                            ))}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {activeAdminSubTab === 'tiers' && (
+                                        <div className="flex flex-col gap-6">
+                                            <div className="glass-card rounded-2xl p-6 border border-gray-800 flex justify-between items-center">
+                                                <div>
+                                                    <h3 className="text-base font-bold text-white">Xếp Hạng & Điểm Loyalty</h3>
+                                                    <p className="text-xs text-gray-400 mt-1">Đánh giá lại thứ hạng khách hàng dựa trên số điểm hiện tại.</p>
+                                                </div>
+                                                <button onClick={runManualTierReview} className="bg-violet-600 hover:bg-violet-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs shadow-lg transition-all duration-300 flex items-center gap-2">
+                                                    <i data-lucide="refresh-cw" className="w-4 h-4"></i> Run Tier Review
+                                                </button>
+                                            </div>
+
+                                            <div className="glass-card rounded-2xl p-6 border border-gray-800">
+                                                <h3 className="text-sm font-bold text-white mb-4 uppercase tracking-wider text-gray-400">Danh Sách Hạng Thành Viên</h3>
+                                                <div className="overflow-x-auto">
+                                                    <table className="w-full text-left text-sm">
+                                                        <thead>
+                                                            <tr className="border-b border-gray-800 text-gray-400 text-xs font-bold uppercase tracking-wider">
+                                                                <th className="pb-3">Hạng Thành Viên</th>
+                                                                <th className="pb-3">Điểm Tối Thiểu</th>
+                                                                <th className="pb-3">Chiết Khấu (%)</th>
+                                                                <th className="pb-3">Hệ Số Tích Điểm</th>
+                                                                <th className="pb-3">Điểm Duy Trì Hạng</th>
+                                                                <th className="pb-3">Khoảng Đặt Lịch (Ngày)</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody className="divide-y divide-gray-800/40">
+                                                            {db.tiers?.map(t => (
+                                                                <tr key={t.tierId} className="text-gray-300">
+                                                                    <td className="py-4 font-bold text-white">{t.tierName}</td>
+                                                                    <td className="py-4 text-cyan-400 font-extrabold">{t.minRankingBalance} Pts</td>
+                                                                    <td className="py-4 font-bold text-white">{t.discountPercent}%</td>
+                                                                    <td className="py-4 text-violet-400 font-semibold">{t.pointMultiplier}x</td>
+                                                                    <td className="py-4">{t.maintainBalance} Pts</td>
+                                                                    <td className="py-4">{t.bookingWindowDays} Ngày</td>
+                                                                </tr>
+                                                            ))}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {activeAdminSubTab === 'dashboard' && (
+                                        <div className="flex flex-col gap-6">
+                                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                                <div className="bg-brand-darker border border-gray-800 rounded-2xl p-4 flex flex-col justify-between">
+                                                    <span className="text-xs text-gray-400 uppercase font-bold tracking-wide">Tổng doanh thu</span>
+                                                    <div className="text-2xl font-extrabold text-white mt-2">1,250,000 đ</div>
+                                                    <span className="text-[10px] text-emerald-400 mt-1 font-semibold">▲ +12% so với hôm qua</span>
+                                                </div>
+                                                <div className="bg-brand-darker border border-gray-800 rounded-2xl p-4 flex flex-col justify-between">
+                                                    <span className="text-xs text-gray-400 uppercase font-bold tracking-wide">Lượt rửa đã xong</span>
+                                                    <div className="text-2xl font-extrabold text-white mt-2">15 xe</div>
+                                                    <span className="text-[10px] text-gray-500 mt-1">Đầy đủ tiến độ</span>
+                                                </div>
+                                                <div className="bg-brand-darker border border-gray-800 rounded-2xl p-4 flex flex-col justify-between">
+                                                    <span className="text-xs text-gray-400 uppercase font-bold tracking-wide">Tỷ lệ hủy lịch</span>
+                                                    <div className="text-2xl font-extrabold text-white mt-2">6.2%</div>
+                                                    <span className="text-[10px] text-emerald-400 mt-1 font-semibold">▼ -2.5% giảm thiểu tốt</span>
+                                                </div>
+                                                <div className="bg-brand-darker border border-gray-800 rounded-2xl p-4 flex flex-col justify-between">
+                                                    <span className="text-xs text-gray-400 uppercase font-bold tracking-wide">Khách hàng mới</span>
+                                                    <div className="text-2xl font-extrabold text-white mt-2">+12 khách</div>
+                                                    <span className="text-[10px] text-violet-400 mt-1 font-semibold">▲ Đăng ký tài khoản</span>
+                                                </div>
+                                            </div>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                <div className="glass-card rounded-2xl p-6 border border-gray-800">
+                                                    <h4 className="text-sm font-bold text-white mb-4 uppercase tracking-wider text-gray-400">Doanh thu Rửa Xe (7 ngày gần nhất)</h4>
+                                                    <div className="h-48 w-full flex items-end justify-between px-4 pt-4 border-b border-l border-gray-800">
+                                                        <div className="w-8 bg-violet-600 rounded-t-lg" style={{ height: "40%" }} title="Thứ 2: 120k"></div>
+                                                        <div className="w-8 bg-violet-600 rounded-t-lg" style={{ height: "55%" }} title="Thứ 3: 200k"></div>
+                                                        <div className="w-8 bg-violet-600 rounded-t-lg" style={{ height: "30%" }} title="Thứ 4: 90k"></div>
+                                                        <div className="w-8 bg-violet-600 rounded-t-lg" style={{ height: "70%" }} title="Thứ 5: 350k"></div>
+                                                        <div className="w-8 bg-violet-600 rounded-t-lg" style={{ height: "80%" }} title="Thứ 6: 410k"></div>
+                                                        <div className="w-8 bg-violet-600 rounded-t-lg" style={{ height: "95%" }} title="Thứ 7: 550k"></div>
+                                                        <div className="w-8 bg-violet-500 rounded-t-lg" style={{ height: "60%" }} title="Chủ Nhật: 300k"></div>
+                                                    </div>
+                                                    <div className="flex justify-between text-[10px] text-gray-500 mt-2 px-2">
+                                                        <span>T2</span><span>T3</span><span>T4</span><span>T5</span><span>T6</span><span>T7</span><span>CN</span>
+                                                    </div>
+                                                </div>
+
+                                                <div className="glass-card rounded-2xl p-6 border border-gray-800 flex flex-col justify-between">
+                                                    <h4 className="text-sm font-bold text-white mb-4 uppercase tracking-wider text-gray-400">Phân Phối Thứ Hạng Khách Hàng</h4>
+                                                    <div className="flex justify-around items-center h-48">
+                                                        <div className="relative w-32 h-32 rounded-full border-8 border-violet-600 flex items-center justify-center">
+                                                            <div className="absolute w-24 h-24 rounded-full border-8 border-cyan-400"></div>
+                                                            <div className="text-center">
+                                                                <div className="text-lg font-extrabold text-white">Gold</div>
+                                                                <div className="text-[10px] text-gray-400">Chủ Yếu</div>
+                                                            </div>
+                                                        </div>
+                                                        <div className="text-xs text-gray-400 flex flex-col gap-1.5">
+                                                            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-violet-600 inline-block"></span> Platinum: 15%</span>
+                                                            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-cyan-400 inline-block"></span> Gold: 45%</span>
+                                                            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span> Silver: 25%</span>
+                                                            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-gray-600 inline-block"></span> Member: 15%</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        ) : null}
+
+                        {/* --- DEVELOPER VIEW: DATABASE INSPECTOR --- */}
+                        {roleTab === 'db-inspector' && (
+                            <div className="glass-card rounded-2xl p-6 border border-gray-800">
+                                <div className="flex justify-between items-center mb-6 border-b border-gray-800 pb-4">
+                                    <div>
+                                        <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                                            <i data-lucide="database" className="text-cyan-400"></i> Database Inspector (LocalStorage)
+                                        </h2>
+                                        <p className="text-xs text-gray-500 mt-1">Đã đồng bộ đầy đủ 100% trường dữ liệu theo sơ đồ thiết kế cơ sở dữ liệu ERD.</p>
+                                    </div>
+                                    <button 
+                                        onClick={resetDatabase}
+                                        className="bg-rose-950/20 text-rose-400 hover:bg-rose-950/40 font-bold border border-rose-900 px-4 py-2 rounded-xl text-xs transition-all duration-300">
+                                        Reset Database về seed gốc
+                                    </button>
+                                </div>
+
+                                <div className="flex flex-col gap-6">
+                                    {Object.keys(db).map(key => (
+                                        <div key={key} className="bg-brand-darker border border-gray-800 rounded-xl p-4">
+                                            <div className="flex justify-between items-center mb-3">
+                                                <h4 className="font-bold text-xs uppercase text-cyan-400 tracking-wider">autowash_{key} ({db[key]?.length || 0} rows)</h4>
+                                                <button onClick={() => {
+                                                    const formatted = JSON.stringify(db[key], null, 2);
+                                                    alert(formatted);
+                                                }} className="text-gray-400 hover:text-gray-200 text-xs font-semibold">Xem chi tiết JSON</button>
+                                            </div>
+                                            <pre className="text-[10px] text-gray-500 max-h-40 overflow-y-auto bg-brand-darker/60 p-2.5 rounded border border-gray-900/60">
+                                                {JSON.stringify(db[key], null, 2)}
+                                            </pre>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                    </main>
+
+                    {/* --- FOOTER --- */}
+                    <footer className="mt-12 py-6 border-t border-gray-800/80 text-center text-xs text-gray-500 glass-card">
+                        <p>© 2026 AutoWash Pro Group. Developed for academic purposes.</p>
+                        <p className="mt-1 text-[10px]">Powered by React + TailwindCSS (Standalone Static Module)</p>
+                    </footer>
+
+                    {/* --- GLOBAL MODALS --- */}
+
+                    {/* OTP MODAL (UC020) */}
+                    {otpModal && (
+                        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+                            <div className="bg-brand-dark border border-gray-800 rounded-2xl max-w-sm w-full p-6 shadow-2xl">
+                                <h3 className="font-bold text-white text-base text-center mb-3">Xác Thực Mã OTP</h3>
+                                <p className="text-xs text-gray-400 text-center mb-6">
+                                    Chúng tôi đã gửi mã xác thực gồm 6 số đến email liên kết của bạn.
+                                </p>
+                                <div className="mb-6">
+                                    <input 
+                                        type="text" 
+                                        value={otpModal.inputOtp} 
+                                        onChange={(e) => setOtpModal(prev => ({ ...prev, inputOtp: e.target.value }))}
+                                        placeholder="Nhập 6 chữ số (hoặc 123456)" 
+                                        className="w-full bg-brand-darker border border-gray-800 text-center text-xl tracking-[0.25em] rounded-xl px-4 py-3 text-white outline-none focus:border-cyan-500" 
+                                    />
+                                    <span className="text-[10px] text-gray-500 block text-center mt-2">Mã OTP thực tế: <strong className="text-cyan-400">{otpModal.correctOtp}</strong> (nhập mã này hoặc 123456 để bỏ qua)</span>
+                                </div>
+                                <div className="flex gap-3">
+                                    <button onClick={() => setOtpModal(null)} className="w-1/3 bg-gray-800 hover:bg-gray-700 text-white font-bold py-2.5 rounded-xl text-xs transition-all duration-300">
+                                        Hủy
+                                    </button>
+                                    <button onClick={verifyOtpCode} className="w-2/3 bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-2.5 rounded-xl text-xs transition-all duration-300">
+                                        Xác Nhận & Xác Thực
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* ONLINE PAYMENT MODAL (UC010) */}
+                    {paymentModal && (
+                        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+                            <div className="bg-brand-dark border border-gray-800 rounded-2xl max-w-sm w-full p-6 shadow-2xl">
+                                <h3 className="font-bold text-white text-base text-center mb-2">Thanh Toán Trực Tuyến qua PayOS</h3>
+                                <p className="text-xs text-gray-400 text-center mb-6">Mã đặt lịch: <strong className="text-white">{paymentModal.bookingId}</strong></p>
+                                
+                                <div className="bg-brand-darker border border-gray-800 p-4 rounded-xl flex flex-col items-center gap-4 mb-6">
+                                    <div className="text-xs text-gray-400 font-bold uppercase tracking-wider">Quét Mã QR Ngân Hàng</div>
+                                    <div className="w-40 h-40 bg-white p-2 rounded-lg flex items-center justify-center">
+                                        <div className="w-36 h-36 bg-gray-200 border-4 border-black flex items-center justify-center font-bold text-black text-xs text-center">
+                                            [ PAYOS QR CODE ]<br />{formatVnd(paymentModal.finalPrice)}
+                                        </div>
+                                    </div>
+                                    <div className="text-center">
+                                        <div className="text-sm font-semibold text-white">Chuyển khoản: {formatVnd(paymentModal.finalPrice)}</div>
+                                        <div className="text-[10px] text-gray-500 mt-0.5">Số tài khoản: 1234567890 (Ngân hàng TPBank)</div>
+                                    </div>
+                                </div>
+
+                                <div className="flex gap-3">
+                                    <button onClick={() => setPaymentModal(null)} className="w-1/3 bg-gray-800 hover:bg-gray-700 text-white font-bold py-2.5 rounded-xl text-xs transition-all duration-300">
+                                        Hủy
+                                    </button>
+                                    <button onClick={confirmOnlinePayment} className="w-2/3 bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-2.5 rounded-xl text-xs transition-all duration-300 shadow-lg shadow-cyan-500/20">
+                                        Xác Nhận Đã Chuyển Khoản
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* ADMIN PROCESS CHECKOUT INVOICE MODAL (UC013) */}
+                    {invoiceModal && (
+                        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+                            <div className="bg-brand-dark border border-gray-800 rounded-2xl max-w-md w-full p-6 shadow-2xl">
+                                <h3 className="font-bold text-white text-base text-center mb-1">Hóa Đơn Thu Tiền & Checkout</h3>
+                                <p className="text-xs text-gray-500 text-center mb-6">Mã cuộc hẹn: <strong className="text-white">{invoiceModal.bookingId}</strong></p>
+                                
+                                <div className="bg-brand-darker border border-gray-800 p-4 rounded-xl flex flex-col gap-3 mb-6">
+                                    <div className="flex justify-between text-xs text-gray-400">
+                                        <span>Khách hàng:</span>
+                                        <span className="font-bold text-white">{getCustomerName(invoiceModal.customerId)}</span>
+                                    </div>
+                                    <div className="flex justify-between text-xs text-gray-400">
+                                        <span>Phương tiện:</span>
+                                        <span className="font-bold text-white">{getVehiclePlate(invoiceModal.vehicleId)}</span>
+                                    </div>
+                                    <div className="border-t border-gray-800/80 pt-2.5 flex justify-between text-xs text-gray-400">
+                                        <span>Gói chính & add-on:</span>
+                                        <span className="font-bold text-white">{formatVnd(invoiceModal.basePrice)}</span>
+                                    </div>
+                                    <div className="flex justify-between text-xs text-gray-400">
+                                        <span>Giảm trừ hạng ({db.tiers?.find(t => t.tierId === invoiceModal.tierId)?.tierName}):</span>
+                                        <span className="font-bold text-rose-400">-{formatVnd(invoiceModal.basePrice - invoiceModal.finalPrice)}</span>
+                                    </div>
+                                    <div className="border-t border-gray-800 pt-3 flex justify-between text-sm font-bold">
+                                        <span className="text-white">Tổng tiền cần thu:</span>
+                                        <span className="text-violet-400">{formatVnd(invoiceModal.finalPrice)}</span>
+                                    </div>
+                                </div>
+
+                                <div className="flex gap-2">
+                                    <button onClick={() => confirmCheckoutPayment(invoiceModal.bookingId, invoiceModal.finalPrice, "Tiền Mặt (Cash)")} className="w-1/2 bg-violet-600 hover:bg-violet-700 text-white font-bold py-3 rounded-xl text-xs transition-all duration-300">
+                                        Tiền Mặt (Cash)
+                                    </button>
+                                    <button onClick={() => confirmCheckoutPayment(invoiceModal.bookingId, invoiceModal.finalPrice, "Quẹt Thẻ (Card)")} className="w-1/2 bg-gray-800 hover:bg-gray-700 text-white font-bold py-3 rounded-xl text-xs border border-gray-700 transition-all duration-300">
+                                        Quẹt Thẻ (POS Card)
+                                    </button>
+                                </div>
+                                <button onClick={() => setInvoiceModal(null)} className="w-full bg-transparent hover:bg-gray-800/20 text-gray-500 font-bold py-2 rounded-xl text-xs mt-3 transition-all duration-300">
+                                    Bỏ Qua / Đóng
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* ADMIN RESCHEDULE BOOKING MODAL (UC017) */}
+                    {rescheduleModal && (
+                        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+                            <div className="bg-brand-dark border border-gray-800 rounded-2xl max-w-sm w-full p-6 shadow-2xl">
+                                <h3 className="font-bold text-white text-base text-center mb-1">Đổi Lịch Hẹn Rửa Xe</h3>
+                                <p className="text-xs text-gray-500 text-center mb-6">Mã: <strong className="text-white">{rescheduleModal.bookingId}</strong></p>
+                                
+                                <form onSubmit={(e) => {
+                                    e.preventDefault();
+                                    const newDate = e.target.newDate.value;
+                                    const newTime = e.target.newTime.value;
+                                    if (!newDate || !newTime) return;
+                                    const newSchedule = `${newDate}T${newTime}`;
+                                    
+                                    const newHist = {
+                                        bookingRescheduelHistoryId: "BRH" + (db.rescheduleHistory.length + 1).toString().padStart(3, "0"),
+                                        bookingId: rescheduleModal.bookingId,
+                                        oldScheduleAt: rescheduleModal.scheduleAt,
+                                        newScheduleAt: newSchedule,
+                                        changeBy: "Admin System",
+                                        createAt: new Date().toISOString(),
+                                        cancelReason: null
+                                    };
+                                    saveTable("rescheduleHistory", [...db.rescheduleHistory, newHist]);
+
+                                    const updatedBookings = db.bookings.map(b => b.bookingId === rescheduleModal.bookingId ? { ...b, scheduleAt: newSchedule } : b);
+                                    saveTable("bookings", updatedBookings);
+                                    alert("Đổi giờ rửa xe thành công!");
+                                    setRescheduleModal(null);
+                                }} className="flex flex-col gap-4">
+                                    <div>
+                                        <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Giờ cũ: {rescheduleModal.scheduleAt.replace('T', ' ')}</label>
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Ngày Mới</label>
+                                        <input type="date" required name="newDate" className="w-full bg-brand-darker border border-gray-800 rounded-xl px-4 py-2.5 text-white outline-none" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Giờ Mới</label>
+                                        <select required name="newTime" className="w-full bg-brand-darker border border-gray-800 rounded-xl px-4 py-2.5 text-white outline-none">
+                                            <option value="08:00">08:00 - 09:00</option>
+                                            <option value="09:00">09:00 - 10:00</option>
+                                            <option value="10:00">10:00 - 11:00</option>
+                                            <option value="14:00">14:00 - 15:00</option>
+                                            <option value="15:00">15:00 - 16:00</option>
+                                            <option value="16:00">16:00 - 17:00</option>
+                                        </select>
+                                    </div>
+                                    <div className="flex gap-2 mt-2">
+                                        <button type="button" onClick={() => setRescheduleModal(null)} className="w-1/3 bg-gray-800 hover:bg-gray-700 text-white font-bold py-2.5 rounded-xl text-xs">Hủy</button>
+                                        <button type="submit" className="w-2/3 bg-violet-600 hover:bg-violet-700 text-white font-bold py-2.5 rounded-xl text-xs">Cập Nhật Giờ</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* ADMIN MANUAL POINTS ADJUSTMENT MODAL (UC015) */}
+                    {adjustmentModal && (
+                        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+                            <div className="bg-brand-dark border border-gray-800 rounded-2xl max-w-sm w-full p-6 shadow-2xl">
+                                <h3 className="font-bold text-white text-base text-center mb-1">Điều Chỉnh Điểm Thủ Công</h3>
+                                <p className="text-xs text-gray-500 text-center mb-6">Khách hàng: <strong className="text-white">{getCustomerName(adjustmentModal.customerId)}</strong></p>
+                                
+                                <form onSubmit={(e) => {
+                                    e.preventDefault();
+                                    const changeVal = Number(e.target.pointsChange.value);
+                                    const reason = e.target.reason.value;
+                                    if (!changeVal || !reason) return;
+                                    
+                                    const currentBalance = adjustmentModal.pointBalance;
+                                    if (currentBalance + changeVal < 0) {
+                                        alert("Số dư điểm sau điều chỉnh không được nhỏ hơn 0!");
+                                        return;
+                                    }
+
+                                    const updatedCustomers = db.customers.map(c => {
+                                        if (c.customerId === adjustmentModal.customerId) {
+                                            const newPts = c.pointBalance + changeVal;
+                                            let newTier = c.tierId;
+                                            const goldTier = db.tiers.find(t => t.tierName === "Gold");
+                                            const silverTier = db.tiers.find(t => t.tierName === "Silver");
+                                            const platTier = db.tiers.find(t => t.tierName === "Platinum");
+                                            const memberTier = db.tiers.find(t => t.tierName === "Member");
+                                            
+                                            if (newPts >= platTier.minRankingBalance) newTier = platTier.tierId;
+                                            else if (newPts >= goldTier.minRankingBalance) newTier = goldTier.tierId;
+                                            else if (newPts >= silverTier.minRankingBalance) newTier = silverTier.tierId;
+                                            else newTier = memberTier.tierId;
+
+                                            return { ...c, pointBalance: newPts, tierId: newTier };
+                                        }
+                                        return c;
+                                    });
+                                    saveTable("customers", updatedCustomers);
+
+                                    const newTrans = {
+                                        transactionId: "LT" + (db.loyaltyTransactions.length + 1).toString().padStart(3, "0"),
+                                        CustomercusId: adjustmentModal.customerId,
+                                        customerId: adjustmentModal.customerId,
+                                        bookingId: null,
+                                        Reward_RedemptionredeemptionId: null,
+                                        points: changeVal,
+                                        createDate: new Date().toISOString(),
+                                        amount: changeVal
+                                    };
+                                    saveTable("loyaltyTransactions", [...db.loyaltyTransactions, newTrans]);
+
+                                    alert(`Đã điều chỉnh thành công ${changeVal > 0 ? '+' : ''}${changeVal} điểm! Lý do: ${reason}`);
+                                    setAdjustmentModal(null);
+                                }} className="flex flex-col gap-4">
+                                    <div>
+                                        <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Số Điểm Tăng/Giảm (ví dụ: +50 hoặc -20)</label>
+                                        <input type="number" required name="pointsChange" placeholder="+50" className="w-full bg-brand-darker border border-gray-800 rounded-xl px-4 py-2.5 text-white outline-none" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Lý Do Điều Chỉnh (Mandatory)</label>
+                                        <textarea required name="reason" rows="3" placeholder="Ví dụ: Đền bù..." className="w-full bg-brand-darker border border-gray-800 rounded-xl px-4 py-2.5 text-white outline-none text-xs" />
+                                    </div>
+                                    <div className="flex gap-2 mt-2">
+                                        <button type="button" onClick={() => setAdjustmentModal(null)} className="w-1/3 bg-gray-800 hover:bg-gray-700 text-white font-bold py-2.5 rounded-xl text-xs">Hủy</button>
+                                        <button type="submit" className="w-2/3 bg-violet-600 hover:bg-violet-700 text-white font-bold py-2.5 rounded-xl text-xs">Xác Nhận</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    )}
+
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+
+        setTimeout(() => {
+            lucide.createIcons();
+        }, 1000);
+    </script>
+</body>
+</html>
