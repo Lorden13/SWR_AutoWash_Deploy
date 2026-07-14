@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AutoWash Pro - ERD & Mobile Interactive Prototype</title>
+    <title>AutoWash Pro - Responsive & Multi-View Prototype</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts -->
@@ -53,7 +53,7 @@
         .mobile-screen-content {
             height: 100%;
             display: flex;
-            flex-col: column;
+            flex-direction: column;
             overflow-y: auto;
             padding-bottom: 70px; /* space for bottom tab bar */
             padding-top: 44px;    /* space for top status bar */
@@ -206,6 +206,8 @@
 
         function App() {
             const [roleTab, setRoleTab] = useState("customer");
+            // Toggle view for Customer: "mobile" | "desktop"
+            const [customerViewMode, setCustomerViewMode] = useState("mobile");
             
             // Authentication state
             const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -733,7 +735,7 @@
                             </div>
                             <div>
                                 <h1 className="text-lg font-bold text-white tracking-wide">AutoWash Pro</h1>
-                                <p className="text-xs text-cyan-400 font-bold uppercase tracking-wider">Mobile & ERD Simulated</p>
+                                <p className="text-xs text-cyan-400 font-bold uppercase tracking-wider">Multi-Layout & ERD Sync</p>
                             </div>
                         </div>
 
@@ -742,12 +744,12 @@
                             <button 
                                 onClick={() => setRoleTab("customer")} 
                                 className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 ${roleTab === 'customer' ? 'bg-cyan-500 text-white shadow-md' : 'text-gray-400 hover:text-gray-200'}`}>
-                                Customer (Mobile)
+                                Customer Portal
                             </button>
                             <button 
                                 onClick={() => setRoleTab("admin")} 
                                 className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 ${roleTab === 'admin' ? 'bg-violet-600 text-white shadow-md' : 'text-gray-400 hover:text-gray-200'}`}>
-                                Admin (Desktop)
+                                Admin Portal
                             </button>
                             <button 
                                 onClick={() => setRoleTab("db-inspector")} 
@@ -758,430 +760,605 @@
                     </header>
 
                     {/* --- MAIN PAGE CONTENT --- */}
-                    <main className="flex-1 p-4 md:p-8 max-w-7xl w-full mx-auto flex justify-center items-start">
+                    <main className="flex-1 p-4 md:p-8 max-w-7xl w-full mx-auto flex flex-col items-center">
                         
-                        {/* --- CUSTOMER MOBILE SIMULATOR PORTAL --- */}
+                        {/* --- VIEW SWITCHER SPECIFIC TO CUSTOMER PORTAL --- */}
+                        {roleTab === 'customer' && isLoggedIn && currentUser.role === 'Customer' && (
+                            <div className="mb-6 flex items-center bg-brand-darker border border-gray-800 p-1.5 rounded-xl">
+                                <span className="text-xs font-bold text-gray-400 px-3 uppercase">Chế độ hiển thị:</span>
+                                <button 
+                                    onClick={() => setCustomerViewMode("mobile")} 
+                                    className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all duration-300 ${customerViewMode === 'mobile' ? 'bg-cyan-500 text-white shadow' : 'text-gray-400 hover:text-gray-200'}`}>
+                                    <i data-lucide="smartphone" className="w-3.5 h-3.5"></i> 📱 Mobile App
+                                </button>
+                                <button 
+                                    onClick={() => setCustomerViewMode("desktop")} 
+                                    className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all duration-300 ${customerViewMode === 'desktop' ? 'bg-cyan-500 text-white shadow' : 'text-gray-400 hover:text-gray-200'}`}>
+                                    <i data-lucide="laptop" className="w-3.5 h-3.5"></i> 💻 Desktop Web
+                                </button>
+                            </div>
+                        )}
+
+                        {/* --- CUSTOMER PORTAL --- */}
                         {roleTab === 'customer' && (
-                            <div className="mobile-device my-6">
-                                {/* Mobile Status Bar */}
-                                <div className="mobile-status-bar">
-                                    <span>09:41</span>
-                                    <div className="flex gap-1.5 items-center">
-                                        <i data-lucide="signal" className="w-3.5 h-3.5 text-white"></i>
-                                        <i data-lucide="wifi" className="w-3.5 h-3.5 text-white"></i>
-                                        <i data-lucide="battery" className="w-4 h-4 text-white"></i>
-                                    </div>
-                                </div>
-
-                                {/* Mobile Screen Content */}
-                                <div className="mobile-screen-content p-4">
-                                    {!isLoggedIn ? (
-                                        <div className="my-auto py-8">
-                                            <div className="text-center mb-8">
-                                                <div className="w-14 h-14 rounded-2xl bg-cyan-500 mx-auto flex items-center justify-center shadow-lg shadow-cyan-500/20 mb-3">
-                                                    <i data-lucide="waves" className="text-white w-8 h-8"></i>
-                                                </div>
-                                                <h2 className="text-2xl font-black text-white">AutoWash Pro</h2>
-                                                <p className="text-xs text-cyan-400 mt-1">Đăng ký dịch vụ & Tích điểm</p>
-                                            </div>
-
-                                            {authMode === 'login' ? (
-                                                <form onSubmit={(e) => { e.preventDefault(); handleLogin(e.target.email.value, e.target.password.value); }} className="flex flex-col gap-4">
-                                                    <div>
-                                                        <input required name="email" type="email" placeholder="Email (customer@autowash.com)" className="w-full bg-slate-900 border border-gray-800 rounded-xl px-4 py-3 text-white text-sm placeholder-gray-600 focus:border-cyan-500 outline-none" />
-                                                    </div>
-                                                    <div>
-                                                        <input required name="password" type="password" placeholder="Mật khẩu" className="w-full bg-slate-900 border border-gray-800 rounded-xl px-4 py-3 text-white text-sm placeholder-gray-600 focus:border-cyan-500 outline-none" />
-                                                    </div>
-                                                    <button type="submit" className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3.5 rounded-xl text-sm shadow-lg shadow-cyan-500/20 mt-2">
-                                                        Đăng Nhập
-                                                    </button>
-                                                    <div className="text-center text-xs text-gray-500 mt-2">
-                                                        Chưa có tài khoản? <a href="#" onClick={() => setAuthMode("register")} className="text-cyan-400 hover:underline">Đăng ký ngay</a>
-                                                    </div>
-                                                    <div className="mt-6 border-t border-gray-800/80 pt-4 text-[10px] text-gray-500">
-                                                        <p className="font-bold text-gray-400">Tài khoản chạy thử:</p>
-                                                        <p className="mt-0.5">📧 customer@autowash.com / customer123</p>
-                                                    </div>
-                                                </form>
-                                            ) : (
-                                                <form onSubmit={(e) => { 
-                                                    e.preventDefault(); 
-                                                    triggerOtp("register", { 
-                                                        fullName: e.target.fullName.value, 
-                                                        email: e.target.email.value, 
-                                                        password: e.target.password.value 
-                                                    }); 
-                                                }} className="flex flex-col gap-4">
-                                                    <div>
-                                                        <input required name="fullName" placeholder="Họ và Tên" className="w-full bg-slate-900 border border-gray-800 rounded-xl px-4 py-3 text-white text-sm placeholder-gray-600 focus:border-cyan-500 outline-none" />
-                                                    </div>
-                                                    <div>
-                                                        <input required name="email" type="email" placeholder="Địa chỉ Email" className="w-full bg-slate-900 border border-gray-800 rounded-xl px-4 py-3 text-white text-sm placeholder-gray-600 focus:border-cyan-500 outline-none" />
-                                                    </div>
-                                                    <div>
-                                                        <input required name="password" type="password" placeholder="Mật khẩu" className="w-full bg-slate-900 border border-gray-800 rounded-xl px-4 py-3 text-white text-sm placeholder-gray-600 focus:border-cyan-500 outline-none" />
-                                                    </div>
-                                                    <button type="submit" className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3.5 rounded-xl text-sm shadow-lg shadow-cyan-500/20 mt-2">
-                                                        Đăng Ký & Nhận OTP
-                                                    </button>
-                                                    <div className="text-center text-xs text-gray-500 mt-2">
-                                                        Đã có tài khoản? <a href="#" onClick={() => setAuthMode("login")} className="text-cyan-400 hover:underline">Đăng nhập</a>
-                                                    </div>
-                                                </form>
-                                            )}
+                            // Render based on selected View Mode
+                            customerViewMode === 'mobile' || !isLoggedIn ? (
+                                /* MOBILE WEB APP VIEW */
+                                <div className="mobile-device my-2">
+                                    {/* Mobile Status Bar */}
+                                    <div className="mobile-status-bar">
+                                        <span>09:41</span>
+                                        <div className="flex gap-1.5 items-center">
+                                            <i data-lucide="signal" className="w-3.5 h-3.5 text-white"></i>
+                                            <i data-lucide="wifi" className="w-3.5 h-3.5 text-white"></i>
+                                            <i data-lucide="battery" className="w-4 h-4 text-white"></i>
                                         </div>
-                                    ) : (
-                                        <div className="flex flex-col gap-4 w-full">
-                                            {/* Subtab Content Customer Mobile */}
-                                            {activeCustomerSubTab === 'dashboard' && (
-                                                <div className="flex flex-col gap-4">
-                                                    {/* User Header Info Card */}
-                                                    <div className="flex justify-between items-center bg-slate-900/50 p-3 rounded-2xl border border-gray-800/80">
-                                                        <div>
-                                                            <div className="text-xs text-gray-400">Xin chào,</div>
-                                                            <div className="font-bold text-white text-sm">{currentUser.fullName}</div>
-                                                        </div>
-                                                        <span className="bg-cyan-950 text-cyan-400 text-[10px] px-2.5 py-0.5 rounded-full font-bold border border-cyan-800">
-                                                            {db.tiers?.find(t => t.tierId === currentUser.customer.tierId)?.tierName} Member
-                                                        </span>
-                                                    </div>
+                                    </div>
 
-                                                    {/* Points Balance view */}
-                                                    <div className="glass-card p-4 rounded-2xl border border-gray-800 flex justify-between items-center bg-gradient-to-r from-slate-900 to-slate-950">
-                                                        <div>
-                                                            <span className="text-[10px] text-gray-400 uppercase tracking-wide">Điểm Tích Lũy</span>
-                                                            <div className="text-2xl font-black text-cyan-400 mt-0.5">{currentUser.customer.pointBalance} Pts</div>
-                                                        </div>
-                                                        <div className="w-24 text-right">
-                                                            <div className="text-[9px] text-gray-500 uppercase">Hệ số tích</div>
-                                                            <div className="text-xs font-bold text-white">{db.tiers?.find(t => t.tierId === currentUser.customer.tierId)?.pointMultiplier}x</div>
-                                                        </div>
+                                    {/* Mobile Screen Content */}
+                                    <div className="mobile-screen-content p-4">
+                                        {!isLoggedIn ? (
+                                            <div className="my-auto py-8">
+                                                <div className="text-center mb-8">
+                                                    <div className="w-14 h-14 rounded-2xl bg-cyan-500 mx-auto flex items-center justify-center shadow-lg shadow-cyan-500/20 mb-3">
+                                                        <i data-lucide="waves" className="text-white w-8 h-8"></i>
                                                     </div>
+                                                    <h2 className="text-2xl font-black text-white">AutoWash Pro</h2>
+                                                    <p className="text-xs text-cyan-400 mt-1">Đăng ký dịch vụ & Tích điểm</p>
+                                                </div>
 
-                                                    {/* Active Bookings view */}
-                                                    <div>
-                                                        <div className="flex justify-between items-center mb-2">
-                                                            <span className="text-xs font-bold text-white uppercase tracking-wider text-gray-400">Lịch Rửa Gần Nhất</span>
+                                                {authMode === 'login' ? (
+                                                    <form onSubmit={(e) => { e.preventDefault(); handleLogin(e.target.email.value, e.target.password.value); }} className="flex flex-col gap-4">
+                                                        <div>
+                                                            <input required name="email" type="email" placeholder="Email (customer@autowash.com)" className="w-full bg-slate-900 border border-gray-800 rounded-xl px-4 py-3 text-white text-sm placeholder-gray-600 focus:border-cyan-500 outline-none" />
                                                         </div>
-                                                        {db.bookings?.filter(b => b.customerId === currentUser.customer.customerId).length === 0 ? (
-                                                            <div className="bg-slate-900/40 p-4 rounded-xl border border-gray-800 text-center text-xs text-gray-500">Bạn chưa đặt lịch. Hãy nhấn vào Đặt Lịch để rửa ngay!</div>
-                                                        ) : (
-                                                            <div className="flex flex-col gap-2.5">
-                                                                {db.bookings?.filter(b => b.customerId === currentUser.customer.customerId).map(b => (
-                                                                    <div key={b.bookingId} className="bg-slate-900/60 p-3.5 rounded-xl border border-gray-800 flex flex-col gap-2.5">
-                                                                        <div className="flex justify-between items-start">
-                                                                            <div>
-                                                                                <div className="text-[11px] text-gray-500 font-bold uppercase">{b.bookingId}</div>
-                                                                                <div className="text-xs text-white font-semibold mt-0.5">{getVehiclePlate(b.vehicleId)}</div>
+                                                        <div>
+                                                            <input required name="password" type="password" placeholder="Mật khẩu" className="w-full bg-slate-900 border border-gray-800 rounded-xl px-4 py-3 text-white text-sm placeholder-gray-600 focus:border-cyan-500 outline-none" />
+                                                        </div>
+                                                        <button type="submit" className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3.5 rounded-xl text-sm shadow-lg shadow-cyan-500/20 mt-2">
+                                                            Đăng Nhập
+                                                        </button>
+                                                        <div className="text-center text-xs text-gray-500 mt-2">
+                                                            Chưa có tài khoản? <a href="#" onClick={() => setAuthMode("register")} className="text-cyan-400 hover:underline">Đăng ký ngay</a>
+                                                        </div>
+                                                    </form>
+                                                ) : (
+                                                    <form onSubmit={(e) => { 
+                                                        e.preventDefault(); 
+                                                        triggerOtp("register", { 
+                                                            fullName: e.target.fullName.value, 
+                                                            email: e.target.email.value, 
+                                                            password: e.target.password.value 
+                                                        }); 
+                                                    }} className="flex flex-col gap-4">
+                                                        <div>
+                                                            <input required name="fullName" placeholder="Họ và Tên" className="w-full bg-slate-900 border border-gray-800 rounded-xl px-4 py-3 text-white text-sm placeholder-gray-600 focus:border-cyan-500 outline-none" />
+                                                        </div>
+                                                        <div>
+                                                            <input required name="email" type="email" placeholder="Địa chỉ Email" className="w-full bg-slate-900 border border-gray-800 rounded-xl px-4 py-3 text-white text-sm placeholder-gray-600 focus:border-cyan-500 outline-none" />
+                                                        </div>
+                                                        <div>
+                                                            <input required name="password" type="password" placeholder="Mật khẩu" className="w-full bg-slate-900 border border-gray-800 rounded-xl px-4 py-3 text-white text-sm placeholder-gray-600 focus:border-cyan-500 outline-none" />
+                                                        </div>
+                                                        <button type="submit" className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3.5 rounded-xl text-sm shadow-lg shadow-cyan-500/20 mt-2">
+                                                            Đăng Ký & Nhận OTP
+                                                        </button>
+                                                        <div className="text-center text-xs text-gray-500 mt-2">
+                                                            Đã có tài khoản? <a href="#" onClick={() => setAuthMode("login")} className="text-cyan-400 hover:underline">Đăng nhập</a>
+                                                        </div>
+                                                    </form>
+                                                )}
+                                            </div>
+                                        ) : (
+                                            <div className="flex flex-col gap-4 w-full">
+                                                {activeCustomerSubTab === 'dashboard' && (
+                                                    <div className="flex flex-col gap-4">
+                                                        <div className="flex justify-between items-center bg-slate-900/50 p-3 rounded-2xl border border-gray-800/80">
+                                                            <div>
+                                                                <div className="text-xs text-gray-400">Xin chào,</div>
+                                                                <div className="font-bold text-white text-sm">{currentUser.fullName}</div>
+                                                            </div>
+                                                            <span className="bg-cyan-950 text-cyan-400 text-[10px] px-2.5 py-0.5 rounded-full font-bold border border-cyan-800">
+                                                                {db.tiers?.find(t => t.tierId === currentUser.customer.tierId)?.tierName}
+                                                            </span>
+                                                        </div>
+
+                                                        <div className="glass-card p-4 rounded-2xl border border-gray-800 flex justify-between items-center bg-gradient-to-r from-slate-900 to-slate-950">
+                                                            <div>
+                                                                <span className="text-[10px] text-gray-400 uppercase tracking-wide">Điểm Tích Lũy</span>
+                                                                <div className="text-2xl font-black text-cyan-400 mt-0.5">{currentUser.customer.pointBalance} Pts</div>
+                                                            </div>
+                                                            <div className="w-24 text-right">
+                                                                <div className="text-[9px] text-gray-500 uppercase">Hệ số tích</div>
+                                                                <div className="text-xs font-bold text-white">{db.tiers?.find(t => t.tierId === currentUser.customer.tierId)?.pointMultiplier}x</div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div>
+                                                            <span className="text-xs font-bold text-white uppercase tracking-wider text-gray-400 block mb-2">Lịch Rửa Gần Nhất</span>
+                                                            {db.bookings?.filter(b => b.customerId === currentUser.customer.customerId).length === 0 ? (
+                                                                <div className="bg-slate-900/40 p-4 rounded-xl border border-gray-800 text-center text-xs text-gray-500">Bạn chưa đặt lịch.</div>
+                                                            ) : (
+                                                                <div className="flex flex-col gap-2.5">
+                                                                    {db.bookings?.filter(b => b.customerId === currentUser.customer.customerId).map(b => (
+                                                                        <div key={b.bookingId} className="bg-slate-900/60 p-3.5 rounded-xl border border-gray-800 flex flex-col gap-2.5">
+                                                                            <div className="flex justify-between items-start">
+                                                                                <div>
+                                                                                    <div className="text-[11px] text-gray-500 font-bold uppercase">{b.bookingId}</div>
+                                                                                    <div className="text-xs text-white font-semibold mt-0.5">{getVehiclePlate(b.vehicleId)}</div>
+                                                                                </div>
+                                                                                <span className={`px-2 py-0.5 rounded text-[9px] font-bold ${
+                                                                                    b.status === 'Paid' ? 'bg-emerald-950 text-emerald-400 border border-emerald-900' : 'bg-amber-950 text-amber-400 border border-amber-900'
+                                                                                }`}>{b.status}</span>
                                                                             </div>
-                                                                            <span className={`px-2 py-0.5 rounded text-[9px] font-bold ${
-                                                                                b.status === 'Paid' ? 'bg-emerald-950 text-emerald-400 border border-emerald-900' :
-                                                                                b.status === 'Pending' ? 'bg-amber-950 text-amber-400 border border-amber-900' :
-                                                                                'bg-cyan-950 text-cyan-400 border border-cyan-900'
-                                                                            }`}>{b.status}</span>
+                                                                            <div className="flex justify-between items-center text-xs border-t border-gray-800/60 pt-2">
+                                                                                <span className="text-gray-400"><i data-lucide="clock" className="w-3.5 h-3.5 inline-block mr-1"></i>{b.scheduleAt.replace('T', ' ')}</span>
+                                                                                <span className="text-cyan-400 font-extrabold">{formatVnd(b.finalPrice)}</span>
+                                                                            </div>
+                                                                            <div className="flex gap-1.5 justify-end">
+                                                                                {b.status === 'Pending' && (
+                                                                                    <button onClick={() => payBookingOnline(b)} className="w-full bg-cyan-500 hover:bg-cyan-600 text-white text-[10px] font-bold py-1.5 rounded-lg shadow">Thanh Toán</button>
+                                                                                )}
+                                                                                {(b.status === 'Pending' || b.status === 'Confirmed') && (
+                                                                                    <button onClick={() => {
+                                                                                        const r = prompt("Lý do:");
+                                                                                        if(r) cancelBooking(b, r);
+                                                                                    }} className="bg-rose-950/20 text-rose-400 text-[10px] font-bold px-2 py-1.5 rounded-lg border border-rose-900">Hủy</button>
+                                                                                )}
+                                                                            </div>
                                                                         </div>
-                                                                        <div className="flex justify-between items-center text-xs border-t border-gray-800/60 pt-2">
-                                                                            <span className="text-gray-400"><i data-lucide="clock" className="w-3.5 h-3.5 inline-block mr-1"></i>{b.scheduleAt.replace('T', ' ')}</span>
-                                                                            <span className="text-cyan-400 font-extrabold">{formatVnd(b.finalPrice)}</span>
-                                                                        </div>
-                                                                        <div className="flex gap-1.5 justify-end">
-                                                                            {b.status === 'Pending' && (
-                                                                                <button onClick={() => payBookingOnline(b)} className="w-full bg-cyan-500 hover:bg-cyan-600 text-white text-[10px] font-bold py-1.5 rounded-lg shadow">
-                                                                                    Thanh Toán Trực Tuyến
-                                                                                </button>
-                                                                            )}
-                                                                            {(b.status === 'Pending' || b.status === 'Confirmed') && (
-                                                                                <button onClick={() => {
-                                                                                    const r = prompt("Lý do hủy:");
-                                                                                    if (r) cancelBooking(b, r);
-                                                                                }} className="bg-rose-950/20 text-rose-400 text-[10px] font-bold px-2 py-1.5 rounded-lg border border-rose-900">
-                                                                                    Hủy Lịch
-                                                                                </button>
-                                                                            )}
-                                                                        </div>
-                                                                    </div>
-                                                                ))}
+                                                                    ))}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {activeCustomerSubTab === 'booking' && (
+                                                    <div className="flex flex-col gap-3">
+                                                        <h3 className="text-sm font-bold text-white uppercase tracking-wider">Đặt Lịch Rửa Xe</h3>
+                                                        <div className="flex justify-between items-center bg-slate-900/60 p-2.5 rounded-xl border border-gray-800 text-[10px]">
+                                                            <span className={bookingStep >= 1 ? "text-cyan-400 font-bold" : "text-gray-500"}>1. Thông tin</span>
+                                                            <span className={bookingStep >= 2 ? "text-cyan-400 font-bold" : "text-gray-500"}>2. Dịch vụ</span>
+                                                            <span className={bookingStep >= 3 ? "text-cyan-400 font-bold" : "text-gray-500"}>3. Xác nhận</span>
+                                                        </div>
+
+                                                        {bookingStep === 1 && (
+                                                            <div className="flex flex-col gap-3">
+                                                                <div>
+                                                                    <label className="text-[10px] font-bold text-gray-400 block mb-1">Xe Đăng Ký</label>
+                                                                    <select value={newBooking.vehicleId} onChange={(e) => setNewBooking(prev => ({ ...prev, vehicleId: e.target.value }))} className="w-full bg-slate-900 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white">
+                                                                        <option value="">-- Chọn xe --</option>
+                                                                        {db.vehicles?.filter(v => v.customerId === currentUser.customer.customerId).map(v => (
+                                                                            <option key={v.vehicleId} value={v.vehicleId}>{v.licensePlate} ({v.vehicleName})</option>
+                                                                        ))}
+                                                                    </select>
+                                                                </div>
+                                                                <div>
+                                                                    <label className="text-[10px] font-bold text-gray-400 block mb-1">Ngày Rửa</label>
+                                                                    <input type="date" value={newBooking.date} onChange={(e) => setNewBooking(prev => ({ ...prev, date: e.target.value }))} className="w-full bg-slate-900 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white" />
+                                                                </div>
+                                                                <div>
+                                                                    <label className="text-[10px] font-bold text-gray-400 block mb-1">Khung Giờ</label>
+                                                                    <select value={newBooking.time} onChange={(e) => setNewBooking(prev => ({ ...prev, time: e.target.value }))} className="w-full bg-slate-900 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white">
+                                                                        <option value="">-- Chọn giờ --</option>
+                                                                        <option value="08:00">08:00 - 09:00</option>
+                                                                        <option value="09:00">09:00 - 10:00</option>
+                                                                        <option value="10:00">10:00 - 11:00</option>
+                                                                        <option value="14:00">14:00 - 15:00</option>
+                                                                    </select>
+                                                                </div>
+                                                                <button onClick={() => {
+                                                                    if(!newBooking.vehicleId || !newBooking.date || !newBooking.time) {
+                                                                        alert("Hãy điền đủ thông tin!");
+                                                                        return;
+                                                                    }
+                                                                    setBookingStep(2);
+                                                                }} className="bg-cyan-500 text-white font-bold py-2.5 rounded-xl text-xs mt-2">Tiếp Tục</button>
                                                             </div>
                                                         )}
-                                                    </div>
-                                                </div>
-                                            )}
 
-                                            {/* Subtab: Booking Wizard Mobile */}
-                                            {activeCustomerSubTab === 'booking' && (
-                                                <div className="flex flex-col gap-3">
-                                                    <h3 className="text-sm font-bold text-white uppercase tracking-wider">Đặt Lịch Rửa Xe</h3>
-                                                    
-                                                    {/* Wizard Step visual indicator */}
-                                                    <div className="flex justify-between items-center bg-slate-900/60 p-2.5 rounded-xl border border-gray-800 text-[10px]">
-                                                        <span className={bookingStep >= 1 ? "text-cyan-400 font-bold" : "text-gray-500"}>1. Khe Giờ</span>
-                                                        <span className={bookingStep >= 2 ? "text-cyan-400 font-bold" : "text-gray-500"}>2. Gói Rửa</span>
-                                                        <span className={bookingStep >= 3 ? "text-cyan-400 font-bold" : "text-gray-500"}>3. Xác Nhận</span>
-                                                    </div>
-
-                                                    {bookingStep === 1 && (
-                                                        <div className="flex flex-col gap-3.5">
-                                                            <div>
-                                                                <label className="text-[10px] font-bold text-gray-400 uppercase block mb-1">Xe Đăng Ký</label>
-                                                                <select value={newBooking.vehicleId} onChange={(e) => setNewBooking(prev => ({ ...prev, vehicleId: e.target.value }))} className="w-full bg-slate-900 border border-gray-800 rounded-xl px-3 py-2.5 text-xs text-white">
-                                                                    <option value="">-- Chọn xe --</option>
-                                                                    {db.vehicles?.filter(v => v.customerId === currentUser.customer.customerId).map(v => (
-                                                                        <option key={v.vehicleId} value={v.vehicleId}>{v.licensePlate} ({v.vehicleName})</option>
-                                                                    ))}
-                                                                </select>
-                                                            </div>
-                                                            <div>
-                                                                <label className="text-[10px] font-bold text-gray-400 uppercase block mb-1">Ngày Rửa</label>
-                                                                <input type="date" value={newBooking.date} onChange={(e) => setNewBooking(prev => ({ ...prev, date: e.target.value }))} className="w-full bg-slate-900 border border-gray-800 rounded-xl px-3 py-2.5 text-xs text-white" />
-                                                            </div>
-                                                            <div>
-                                                                <label className="text-[10px] font-bold text-gray-400 uppercase block mb-1">Giờ Hẹn</label>
-                                                                <select value={newBooking.time} onChange={(e) => setNewBooking(prev => ({ ...prev, time: e.target.value }))} className="w-full bg-slate-900 border border-gray-800 rounded-xl px-3 py-2.5 text-xs text-white">
-                                                                    <option value="">-- Chọn giờ --</option>
-                                                                    <option value="08:00">08:00 - 09:00</option>
-                                                                    <option value="09:00">09:00 - 10:00</option>
-                                                                    <option value="10:00">10:00 - 11:00</option>
-                                                                    <option value="14:00">14:00 - 15:00</option>
-                                                                    <option value="15:00">15:00 - 16:00</option>
-                                                                </select>
-                                                            </div>
-                                                            <button onClick={() => {
-                                                                if(!newBooking.vehicleId || !newBooking.date || !newBooking.time) {
-                                                                    alert("Hãy nhập đầy đủ thông tin!");
-                                                                    return;
-                                                                }
-                                                                setBookingStep(2);
-                                                            }} className="bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 rounded-xl text-xs shadow-md mt-2">
-                                                                Tiếp Tục
-                                                            </button>
-                                                        </div>
-                                                    )}
-
-                                                    {bookingStep === 2 && (
-                                                        <div className="flex flex-col gap-3">
-                                                            <div className="flex flex-col gap-2">
-                                                                <label className="text-[10px] font-bold text-gray-400 uppercase block">Gói Rửa Xe Chính</label>
+                                                        {bookingStep === 2 && (
+                                                            <div className="flex flex-col gap-3">
+                                                                <label className="text-[10px] font-bold text-gray-400 block">Gói rửa chính</label>
                                                                 {db.services?.filter(s => s.category === 'Wash Package').map(s => (
-                                                                    <div key={s.serviceId} onClick={() => setNewBooking(prev => ({ ...prev, packageId: s.serviceId }))} className={`p-3 rounded-xl border cursor-pointer text-xs flex justify-between items-center ${newBooking.packageId === s.serviceId ? 'bg-cyan-950/40 border-cyan-500' : 'bg-slate-900 border-gray-800'}`}>
-                                                                        <div>
-                                                                            <div className="font-bold text-white">{s.serviceName}</div>
-                                                                            <div className="text-[10px] text-gray-500 mt-0.5">{s.estimateMinutes} phút</div>
-                                                                        </div>
-                                                                        <div className="text-cyan-400 font-extrabold">{formatVnd(s.basePrice)}</div>
+                                                                    <div key={s.serviceId} onClick={() => setNewBooking(prev => ({ ...prev, packageId: s.serviceId }))} className={`p-2.5 rounded-lg border text-xs flex justify-between cursor-pointer ${newBooking.packageId === s.serviceId ? 'bg-cyan-950/40 border-cyan-500' : 'bg-slate-900 border-gray-800'}`}>
+                                                                        <span>{s.serviceName}</span>
+                                                                        <span className="text-cyan-400 font-bold">{formatVnd(s.basePrice)}</span>
                                                                     </div>
                                                                 ))}
-                                                            </div>
-                                                            <div className="flex flex-col gap-2">
-                                                                <label className="text-[10px] font-bold text-gray-400 uppercase block">Dịch Vụ Bổ Sung (Add-on)</label>
+                                                                <label className="text-[10px] font-bold text-gray-400 block mt-2">Dịch vụ bổ sung</label>
                                                                 {db.services?.filter(s => s.category === 'Add-on').map(s => {
                                                                     const checked = newBooking.addOns.includes(s.serviceId);
                                                                     return (
                                                                         <div key={s.serviceId} onClick={() => {
                                                                             setNewBooking(prev => {
                                                                                 const exists = prev.addOns.includes(s.serviceId);
-                                                                                const addOns = exists ? prev.addOns.filter(id => id !== s.serviceId) : [...prev.addOns, s.serviceId];
-                                                                                return { ...prev, addOns };
+                                                                                return { ...prev, addOns: exists ? prev.addOns.filter(id => id !== s.serviceId) : [...prev.addOns, s.serviceId] };
                                                                             });
-                                                                        }} className={`p-3 rounded-xl border cursor-pointer text-xs flex justify-between items-center ${checked ? 'bg-cyan-950/40 border-cyan-500' : 'bg-slate-900 border-gray-800'}`}>
-                                                                            <div>
-                                                                                <div className="font-bold text-white">{s.serviceName}</div>
-                                                                                <div className="text-[10px] text-gray-500 mt-0.5">{s.estimateMinutes} phút</div>
-                                                                            </div>
-                                                                            <div className="text-cyan-400 font-bold">+{formatVnd(s.basePrice)}</div>
+                                                                        }} className={`p-2.5 rounded-lg border text-xs flex justify-between cursor-pointer ${checked ? 'bg-cyan-950/40 border-cyan-500' : 'bg-slate-900 border-gray-800'}`}>
+                                                                            <span>{s.serviceName}</span>
+                                                                            <span className="text-cyan-400 font-bold">+{formatVnd(s.basePrice)}</span>
+                                                                        </div>
+                                                                    );
+                                                                })}
+                                                                <div className="flex gap-2 mt-2">
+                                                                    <button onClick={() => setBookingStep(1)} className="w-1/3 bg-slate-800 text-white py-2 rounded-xl text-xs">Quay Lại</button>
+                                                                    <button onClick={() => {
+                                                                        if(!newBooking.packageId) return;
+                                                                        setBookingStep(3);
+                                                                    }} className="w-2/3 bg-cyan-500 text-white py-2 rounded-xl text-xs">Tiếp Tục</button>
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+                                                        {bookingStep === 3 && (() => {
+                                                            const costs = getBookingCosts(newBooking.packageId, newBooking.addOns);
+                                                            return (
+                                                                <div className="flex flex-col gap-3">
+                                                                    <div className="bg-slate-900 border border-gray-800 p-3 rounded-xl flex flex-col gap-2 text-xs">
+                                                                        <div className="flex justify-between"><span>Giá gói chính:</span><span>{formatVnd(costs.base)}</span></div>
+                                                                        <div className="flex justify-between text-rose-400"><span>Giảm hạng:</span><span>-{formatVnd(costs.tierDiscount)}</span></div>
+                                                                        <div>
+                                                                            <select value={newBooking.voucherId} onChange={(e) => setNewBooking(prev => ({ ...prev, voucherId: e.target.value }))} className="w-full bg-slate-950 border border-gray-850 rounded p-1 text-xs text-white">
+                                                                                <option value="">-- Chọn voucher --</option>
+                                                                                {db.redemptions?.filter(r => r.customerId === currentUser.customer.customerId && r.status === 'Active').map(r => (
+                                                                                    <option key={r.redemptionId} value={r.redemptionId}>{db.rewards.find(rw => rw.rewardId === r.rewardId)?.rewardName}</option>
+                                                                                ))}
+                                                                            </select>
+                                                                        </div>
+                                                                        {costs.voucherDiscount > 0 && (
+                                                                            <div className="flex justify-between text-rose-400"><span>Giảm Voucher:</span><span>-{formatVnd(costs.voucherDiscount)}</span></div>
+                                                                        )}
+                                                                        <div className="border-t border-gray-800 pt-2 flex justify-between font-bold text-cyan-400"><span>Tổng cộng:</span><span>{formatVnd(costs.final)}</span></div>
+                                                                    </div>
+                                                                    <div className="flex gap-2">
+                                                                        <button onClick={() => setBookingStep(2)} className="w-1/3 bg-slate-800 text-white py-2 rounded-xl text-xs">Quay Lại</button>
+                                                                        <button onClick={submitBooking} className="w-2/3 bg-cyan-500 text-white py-2 rounded-xl text-xs">Xác Nhận Đặt</button>
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                        })()}
+                                                    </div>
+                                                )}
+
+                                                {activeCustomerSubTab === 'vehicles' && (
+                                                    <div className="flex flex-col gap-3">
+                                                        <h3 className="text-sm font-bold text-white uppercase tracking-wider">Thêm Xe Mới</h3>
+                                                        <form onSubmit={(e) => { e.preventDefault(); triggerOtp("vehicle", vehicleForm); }} className="bg-slate-900 border border-gray-800 p-3 rounded-xl flex flex-col gap-2">
+                                                            <input required value={vehicleForm.licensePlate} onChange={(e) => setVehicleForm(prev => ({ ...prev, licensePlate: e.target.value }))} placeholder="Biển Số Xe" className="w-full bg-slate-950 border border-gray-800 rounded px-2.5 py-1.5 text-xs text-white" />
+                                                            <input required value={vehicleForm.vehicleName} onChange={(e) => setVehicleForm(prev => ({ ...prev, vehicleName: e.target.value }))} placeholder="Tên Xe (SH Đỏ)" className="w-full bg-slate-950 border border-gray-800 rounded px-2.5 py-1.5 text-xs text-white" />
+                                                            <div className="grid grid-cols-2 gap-1.5">
+                                                                <input required value={vehicleForm.brand} onChange={(e) => setVehicleForm(prev => ({ ...prev, brand: e.target.value }))} placeholder="Hãng (Honda)" className="w-full bg-slate-950 border border-gray-800 rounded px-2.5 py-1.5 text-xs text-white" />
+                                                                <input required value={vehicleForm.model} onChange={(e) => setVehicleForm(prev => ({ ...prev, model: e.target.value }))} placeholder="Đời (AirBlade)" className="w-full bg-slate-950 border border-gray-800 rounded px-2.5 py-1.5 text-xs text-white" />
+                                                            </div>
+                                                            <button type="submit" className="bg-cyan-500 text-white font-bold py-2 rounded-xl text-xs mt-1">Đăng Ký với OTP</button>
+                                                        </form>
+                                                        <div className="flex flex-col gap-1.5">
+                                                            <span className="text-[10px] text-gray-500 uppercase font-bold">Danh sách xe của bạn</span>
+                                                            {db.vehicles?.filter(v => v.customerId === currentUser.customer.customerId).map(v => (
+                                                                <div key={v.vehicleId} className="bg-slate-900 border border-gray-800 rounded-xl p-2.5 flex justify-between items-center text-xs">
+                                                                    <span>{v.licensePlate} ({v.vehicleName})</span>
+                                                                    <button onClick={() => saveTable("vehicles", db.vehicles.filter(x => x.vehicleId !== v.vehicleId))} className="text-rose-400"><i data-lucide="trash-2" className="w-4 h-4"></i></button>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {activeCustomerSubTab === 'rewards' && (
+                                                    <div className="flex flex-col gap-3">
+                                                        <h3 className="text-sm font-bold text-white uppercase tracking-wider">Đổi Quà Tích Điểm</h3>
+                                                        <div className="flex flex-col gap-2">
+                                                            {db.rewards?.map(r => (
+                                                                <div key={r.rewardId} className="bg-slate-900 border border-gray-800 rounded-xl p-3 flex justify-between items-center text-xs">
+                                                                    <div>
+                                                                        <div className="font-bold text-white">{r.rewardName}</div>
+                                                                        <div className="text-[10px] text-gray-500 mt-0.5">{r.pointCost} Pts</div>
+                                                                    </div>
+                                                                    <button disabled={currentUser.customer.pointBalance < r.pointCost} onClick={() => redeemReward(r)} className="bg-cyan-500 disabled:bg-gray-800 text-white text-xs px-2.5 py-1.5 rounded">Đổi</button>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {activeCustomerSubTab === 'profile' && (
+                                                    <div className="flex flex-col gap-3 text-xs">
+                                                        <h3 className="text-sm font-bold text-white uppercase tracking-wider">Hồ Sơ Cá Nhân</h3>
+                                                        <div className="bg-slate-900 border border-gray-800 p-3 rounded-xl flex flex-col gap-2">
+                                                            <div><span className="text-gray-500">Tên:</span> <span className="font-bold text-white">{currentUser.fullName}</span></div>
+                                                            <div><span className="text-gray-500">Email:</span> <span className="font-bold text-white">{currentUser.email}</span></div>
+                                                        </div>
+                                                        <button onClick={handleLogout} className="bg-rose-950 text-rose-400 font-bold py-2 rounded-xl mt-4 border border-rose-900">Đăng Xuất</button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Mobile bottom navigation */}
+                                    {isLoggedIn && (
+                                        <div className="mobile-nav-bar">
+                                            <button onClick={() => setActiveCustomerSubTab("dashboard")} className={`flex flex-col items-center gap-0.5 text-[9px] font-bold ${activeCustomerSubTab === 'dashboard' ? 'text-cyan-400' : 'text-gray-500'}`}><i data-lucide="layout-dashboard" className="w-4.5 h-4.5"></i>Home</button>
+                                            <button onClick={() => { setActiveCustomerSubTab("booking"); setBookingStep(1); }} className={`flex flex-col items-center gap-0.5 text-[9px] font-bold ${activeCustomerSubTab === 'booking' ? 'text-cyan-400' : 'text-gray-500'}`}><i data-lucide="calendar" className="w-4.5 h-4.5"></i>Đặt Lịch</button>
+                                            <button onClick={() => setActiveCustomerSubTab("vehicles")} className={`flex flex-col items-center gap-0.5 text-[9px] font-bold ${activeCustomerSubTab === 'vehicles' ? 'text-cyan-400' : 'text-gray-500'}`}><i data-lucide="bike" className="w-4.5 h-4.5"></i>Xe Máy</button>
+                                            <button onClick={() => setActiveCustomerSubTab("rewards")} className={`flex flex-col items-center gap-0.5 text-[9px] font-bold ${activeCustomerSubTab === 'rewards' ? 'text-cyan-400' : 'text-gray-500'}`}><i data-lucide="gift" className="w-4.5 h-4.5"></i>Đổi Quà</button>
+                                            <button onClick={() => setActiveCustomerSubTab("profile")} className={`flex flex-col items-center gap-0.5 text-[9px] font-bold ${activeCustomerSubTab === 'profile' ? 'text-cyan-400' : 'text-gray-500'}`}><i data-lucide="user" className="w-4.5 h-4.5"></i>Hồ Sơ</button>
+                                        </div>
+                                    )}
+                                    <div className="mobile-home-indicator"></div>
+                                </div>
+                            ) : (
+                                /* DESKTOP WEB PORTAL VIEW (SPACIOUS WIDE INTERFACE) */
+                                <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 w-full">
+                                    <div className="lg:col-span-1 glass-card rounded-2xl p-4 border border-gray-800 flex flex-col gap-2">
+                                        <div className="p-4 border-b border-gray-800 mb-2 text-center lg:text-left">
+                                            <h3 className="font-bold text-white text-base">{currentUser.fullName}</h3>
+                                            <p className="text-xs text-gray-400 mt-1">{currentUser.email}</p>
+                                            {currentUser.customer && (
+                                                <span className="inline-block mt-3 bg-cyan-950 text-cyan-400 text-xs px-2.5 py-1 rounded-full font-bold border border-cyan-800">
+                                                    Tier: {db.tiers?.find(t => t.tierId === currentUser.customer.tierId)?.tierName}
+                                                </span>
+                                            )}
+                                        </div>
+                                        
+                                        <button onClick={() => setActiveCustomerSubTab("dashboard")} className={`w-full text-left px-4 py-3 rounded-xl text-sm font-semibold flex items-center gap-3 transition-all duration-300 ${activeCustomerSubTab === 'dashboard' ? 'bg-cyan-950/50 text-cyan-400 border border-cyan-900' : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800/30'}`}>
+                                            <i data-lucide="layout-dashboard" className="w-5 h-5"></i> Dashboard
+                                        </button>
+                                        <button onClick={() => { setActiveCustomerSubTab("booking"); setBookingStep(1); }} className={`w-full text-left px-4 py-3 rounded-xl text-sm font-semibold flex items-center gap-3 transition-all duration-300 ${activeCustomerSubTab === 'booking' ? 'bg-cyan-950/50 text-cyan-400 border border-cyan-900' : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800/30'}`}>
+                                            <i data-lucide="calendar" className="w-5 h-5"></i> Đặt Lịch Rửa Xe
+                                        </button>
+                                        <button onClick={() => setActiveCustomerSubTab("vehicles")} className={`w-full text-left px-4 py-3 rounded-xl text-sm font-semibold flex items-center gap-3 transition-all duration-300 ${activeCustomerSubTab === 'vehicles' ? 'bg-cyan-950/50 text-cyan-400 border border-cyan-900' : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800/30'}`}>
+                                            <i data-lucide="bike" className="w-5 h-5"></i> Quản Lý Xe
+                                        </button>
+                                        <button onClick={() => setActiveCustomerSubTab("rewards")} className={`w-full text-left px-4 py-3 rounded-xl text-sm font-semibold flex items-center gap-3 transition-all duration-300 ${activeCustomerSubTab === 'rewards' ? 'bg-cyan-950/50 text-cyan-400 border border-cyan-900' : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800/30'}`}>
+                                            <i data-lucide="gift" className="w-5 h-5"></i> Đổi Thưởng
+                                        </button>
+                                        <button onClick={() => setActiveCustomerSubTab("profile")} className={`w-full text-left px-4 py-3 rounded-xl text-sm font-semibold flex items-center gap-3 transition-all duration-300 ${activeCustomerSubTab === 'profile' ? 'bg-cyan-950/50 text-cyan-400 border border-cyan-900' : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800/30'}`}>
+                                            <i data-lucide="user" className="w-5 h-5"></i> Hồ Sơ Cá Nhân
+                                        </button>
+                                        
+                                        <button onClick={handleLogout} className="w-full text-left px-4 py-3 rounded-xl text-sm font-semibold text-rose-400 hover:bg-rose-950/20 hover:text-rose-300 flex items-center gap-3 transition-all duration-300 mt-auto">
+                                            <i data-lucide="log-out" className="w-5 h-5"></i> Đăng Xuất
+                                        </button>
+                                    </div>
+
+                                    <div className="lg:col-span-3 flex flex-col gap-6">
+                                        {activeCustomerSubTab === 'dashboard' && (
+                                            <div className="flex flex-col gap-6">
+                                                <div className="glass-card rounded-2xl p-6 border border-gray-800 flex justify-between items-center bg-gradient-to-r from-slate-900 to-slate-950">
+                                                    <div>
+                                                        <h2 className="text-xl font-bold text-white">Thành Viên {db.tiers?.find(t => t.tierId === currentUser.customer.tierId)?.tierName}</h2>
+                                                        <p className="text-sm text-gray-400 mt-1">Cấp độ hiện tại nhận được chiết khấu rửa cố định.</p>
+                                                        <div className="mt-4 flex items-center gap-4">
+                                                            <div className="text-3xl font-extrabold text-cyan-400">{currentUser.customer.pointBalance} Pts</div>
+                                                            <div className="text-xs text-gray-500 border-l border-gray-800/60 pl-4">
+                                                                Hệ số: {db.tiers?.find(t => t.tierId === currentUser.customer.tierId)?.pointMultiplier}x<br />
+                                                                Giảm giá trực tiếp: {db.tiers?.find(t => t.tierId === currentUser.customer.tierId)?.discountPercent}%
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="w-full md:w-64 flex flex-col gap-2">
+                                                        <div className="flex justify-between text-xs text-gray-400 font-bold">
+                                                            <span>Tiến Trình Thăng Hạng</span>
+                                                            <span>{currentUser.customer.pointBalance} / 500 Pts</span>
+                                                        </div>
+                                                        <div className="w-full h-3 bg-brand-darker rounded-full overflow-hidden border border-gray-800">
+                                                            <div className="h-full bg-gradient-to-r from-cyan-500 to-indigo-500" style={{ width: `${Math.min(100, (currentUser.customer.pointBalance / 500) * 100)}%` }}></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="glass-card rounded-2xl p-6 border border-gray-800">
+                                                    <h3 className="text-base font-bold text-white mb-4">Lịch Rửa Xe Sắp Tới</h3>
+                                                    {db.bookings?.filter(b => b.customerId === currentUser.customer.customerId).length === 0 ? (
+                                                        <p className="text-gray-500 text-sm py-4 text-center">Bạn chưa có cuộc hẹn nào.</p>
+                                                    ) : (
+                                                        <div className="overflow-x-auto">
+                                                            <table className="w-full text-left text-sm">
+                                                                <thead>
+                                                                    <tr className="border-b border-gray-800 text-gray-400 text-xs font-bold uppercase">
+                                                                        <th className="pb-3">Mã Hẹn</th>
+                                                                        <th className="pb-3">Xe Rửa</th>
+                                                                        <th className="pb-3">Ngày Giờ Rửa</th>
+                                                                        <th className="pb-3">Hóa Đơn</th>
+                                                                        <th className="pb-3">Trạng Thái</th>
+                                                                        <th className="pb-3 text-right">Thao Tác</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    {db.bookings?.filter(b => b.customerId === currentUser.customer.customerId).map(b => (
+                                                                        <tr key={b.bookingId} className="border-b border-gray-800/40 text-gray-300">
+                                                                            <td className="py-4 font-bold text-white">{b.bookingId}</td>
+                                                                            <td className="py-4">{getVehiclePlate(b.vehicleId)}</td>
+                                                                            <td className="py-4">{b.scheduleAt.replace('T', ' ')}</td>
+                                                                            <td className="py-4 text-cyan-400 font-bold">{formatVnd(b.finalPrice)}</td>
+                                                                            <td className="py-4"><span className="px-2.5 py-0.5 rounded bg-cyan-950 text-cyan-400 border border-cyan-900 text-xs font-bold">{b.status}</span></td>
+                                                                            <td className="py-4 text-right flex justify-end gap-2">
+                                                                                {b.status === 'Pending' && <button onClick={() => payBookingOnline(b)} className="bg-cyan-500 hover:bg-cyan-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow">Thanh Toán</button>}
+                                                                                {(b.status === 'Pending' || b.status === 'Confirmed') && <button onClick={() => { const r = prompt("Nhập lý do:"); if(r) cancelBooking(b, r); }} className="bg-rose-950 hover:bg-rose-900 text-rose-400 text-xs font-bold px-3 py-1.5 rounded border border-rose-900">Hủy</button>}
+                                                                            </td>
+                                                                        </tr>
+                                                                    ))}
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {activeCustomerSubTab === 'booking' && (
+                                            <div className="glass-card rounded-2xl p-6 border border-gray-800">
+                                                <h3 className="text-lg font-bold text-white mb-6">Đặt Lịch Rửa Xe</h3>
+                                                <div className="flex justify-between items-center mb-8 bg-brand-darker p-4 rounded-xl border border-gray-800">
+                                                    <div className={bookingStep >= 1 ? "text-cyan-400 font-bold text-xs" : "text-gray-500 text-xs"}>1. Chọn Xe & Giờ</div>
+                                                    <div className={bookingStep >= 2 ? "text-cyan-400 font-bold text-xs" : "text-gray-500 text-xs"}>2. Gói Rửa & Add-ons</div>
+                                                    <div className={bookingStep >= 3 ? "text-cyan-400 font-bold text-xs" : "text-gray-500 text-xs"}>3. Chiết Khấu & Đặt</div>
+                                                </div>
+
+                                                {bookingStep === 1 && (
+                                                    <div className="flex flex-col gap-4">
+                                                        <div>
+                                                            <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Chọn Xe Của Bạn</label>
+                                                            <select value={newBooking.vehicleId} onChange={(e) => setNewBooking(prev => ({ ...prev, vehicleId: e.target.value }))} className="w-full bg-brand-darker border border-gray-800 rounded-xl px-4 py-3 text-white">
+                                                                <option value="">-- Chọn xe đã đăng ký --</option>
+                                                                {db.vehicles?.filter(v => v.customerId === currentUser.customer.customerId).map(v => (
+                                                                    <option key={v.vehicleId} value={v.vehicleId}>{v.licensePlate} ({v.brand} {v.model})</option>
+                                                                ))}
+                                                            </select>
+                                                        </div>
+                                                        <div className="grid grid-cols-2 gap-4">
+                                                            <div>
+                                                                <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Chọn Ngày</label>
+                                                                <input type="date" value={newBooking.date} onChange={(e) => setNewBooking(prev => ({ ...prev, date: e.target.value }))} className="w-full bg-brand-darker border border-gray-800 rounded-xl px-4 py-3 text-white" />
+                                                            </div>
+                                                            <div>
+                                                                <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Chọn Khung Giờ</label>
+                                                                <select value={newBooking.time} onChange={(e) => setNewBooking(prev => ({ ...prev, time: e.target.value }))} className="w-full bg-brand-darker border border-gray-800 rounded-xl px-4 py-3 text-white">
+                                                                    <option value="">-- Chọn khe giờ rửa --</option>
+                                                                    <option value="08:00">08:00 - 09:00</option>
+                                                                    <option value="09:00">09:00 - 10:00</option>
+                                                                    <option value="10:00">10:00 - 11:00</option>
+                                                                    <option value="14:00">14:00 - 15:00</option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        <button onClick={() => { if(!newBooking.vehicleId || !newBooking.date || !newBooking.time) return; setBookingStep(2); }} className="bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3.5 rounded-xl transition mt-4">Tiếp Tục</button>
+                                                    </div>
+                                                )}
+
+                                                {bookingStep === 2 && (
+                                                    <div className="flex flex-col gap-6">
+                                                        <div>
+                                                            <h4 className="text-xs font-bold text-gray-400 uppercase mb-3">Chọn Gói Rửa</h4>
+                                                            <div className="grid grid-cols-3 gap-4">
+                                                                {db.services?.filter(s => s.category === 'Wash Package').map(s => (
+                                                                    <div key={s.serviceId} onClick={() => setNewBooking(prev => ({ ...prev, packageId: s.serviceId }))} className={`p-4 rounded-xl border cursor-pointer transition ${newBooking.packageId === s.serviceId ? 'bg-cyan-950/40 border-cyan-500' : 'bg-brand-darker border-gray-800'}`}>
+                                                                        <div className="font-bold text-white">{s.serviceName}</div>
+                                                                        <div className="text-cyan-400 font-extrabold mt-2">{formatVnd(s.basePrice)}</div>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                        <div>
+                                                            <h4 className="text-xs font-bold text-gray-400 uppercase mb-3">Dịch vụ bổ sung</h4>
+                                                            <div className="grid grid-cols-2 gap-4">
+                                                                {db.services?.filter(s => s.category === 'Add-on').map(s => {
+                                                                    const checked = newBooking.addOns.includes(s.serviceId);
+                                                                    return (
+                                                                        <div key={s.serviceId} onClick={() => setNewBooking(prev => {
+                                                                            const exists = prev.addOns.includes(s.serviceId);
+                                                                            return { ...prev, addOns: exists ? prev.addOns.filter(id => id !== s.serviceId) : [...prev.addOns, s.serviceId] };
+                                                                        })} className={`p-4 rounded-xl border cursor-pointer transition ${checked ? 'bg-cyan-950/40 border-cyan-500' : 'bg-brand-darker border-gray-800'}`}>
+                                                                            <div className="font-bold text-white">{s.serviceName}</div>
+                                                                            <div className="text-cyan-400 font-bold mt-1">+{formatVnd(s.basePrice)}</div>
                                                                         </div>
                                                                     );
                                                                 })}
                                                             </div>
-                                                            <div className="flex gap-2 mt-2">
-                                                                <button onClick={() => setBookingStep(1)} className="w-1/3 bg-slate-800 hover:bg-slate-700 text-white font-bold py-2.5 rounded-xl text-xs">Quay Lại</button>
-                                                                <button onClick={() => {
-                                                                    if (!newBooking.packageId) {
-                                                                        alert("Hãy chọn gói rửa chính!");
-                                                                        return;
-                                                                    }
-                                                                    setBookingStep(3);
-                                                                }} className="w-2/3 bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-2.5 rounded-xl text-xs shadow-md">Tiếp Tục</button>
+                                                        </div>
+                                                        <div className="flex gap-4">
+                                                            <button onClick={() => setBookingStep(1)} className="w-1/3 bg-gray-800 py-3 rounded-xl font-bold">Quay Lại</button>
+                                                            <button onClick={() => { if(!newBooking.packageId) return; setBookingStep(3); }} className="w-2/3 bg-cyan-500 py-3 rounded-xl font-bold">Tiếp Tục</button>
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {bookingStep === 3 && (() => {
+                                                    const costs = getBookingCosts(newBooking.packageId, newBooking.addOns);
+                                                    return (
+                                                        <div className="flex flex-col gap-6">
+                                                            <div className="bg-brand-darker border border-gray-800 p-6 rounded-xl flex flex-col gap-4 text-sm">
+                                                                <div className="flex justify-between"><span>Giá gốc:</span><span className="font-semibold text-white">{formatVnd(costs.base)}</span></div>
+                                                                <div className="flex justify-between text-rose-400"><span>Giảm giá hạng ({db.tiers?.find(t => t.tierId === currentUser.customer.tierId)?.tierName}):</span><span>-{formatVnd(costs.tierDiscount)}</span></div>
+                                                                <div>
+                                                                    <label className="block text-xs font-bold text-gray-400 mb-2">Chọn Voucher áp dụng</label>
+                                                                    <select value={newBooking.voucherId} onChange={(e) => setNewBooking(prev => ({ ...prev, voucherId: e.target.value }))} className="w-full bg-brand-darker border border-gray-800 rounded-xl px-4 py-3 text-white">
+                                                                        <option value="">-- Chọn voucher --</option>
+                                                                        {db.redemptions?.filter(r => r.customerId === currentUser.customer.customerId && r.status === 'Active').map(r => (
+                                                                            <option key={r.redemptionId} value={r.redemptionId}>{db.rewards.find(rw => rw.rewardId === r.rewardId)?.rewardName}</option>
+                                                                        ))}
+                                                                    </select>
+                                                                </div>
+                                                                {costs.voucherDiscount > 0 && <div className="flex justify-between text-rose-400"><span>Giảm Voucher:</span><span>-{formatVnd(costs.voucherDiscount)}</span></div>}
+                                                                <div className="border-t border-gray-850 pt-4 flex justify-between font-bold text-base text-cyan-400"><span>Tổng thanh toán:</span><span>{formatVnd(costs.final)}</span></div>
+                                                            </div>
+                                                            <div className="flex gap-4">
+                                                                <button onClick={() => setBookingStep(2)} className="w-1/3 bg-gray-800 py-3 rounded-xl font-bold">Quay Lại</button>
+                                                                <button onClick={submitBooking} className="w-2/3 bg-cyan-500 py-3 rounded-xl font-bold">Xác Nhận Đặt Lịch</button>
                                                             </div>
                                                         </div>
-                                                    )}
+                                                    );
+                                                })()}
+                                            </div>
+                                        )}
 
-                                                    {bookingStep === 3 && (() => {
-                                                        const costs = getBookingCosts(newBooking.packageId, newBooking.addOns);
-                                                        return (
-                                                            <div className="flex flex-col gap-3">
-                                                                <div className="bg-slate-900 border border-gray-800 p-4 rounded-xl flex flex-col gap-2.5 text-xs">
-                                                                    <div className="flex justify-between">
-                                                                        <span className="text-gray-400">Giá gốc:</span>
-                                                                        <span className="font-bold text-white">{formatVnd(costs.base)}</span>
-                                                                    </div>
-                                                                    <div className="flex justify-between">
-                                                                        <span className="text-gray-400">Hạng chiết khấu:</span>
-                                                                        <span className="font-bold text-rose-400">-{formatVnd(costs.tierDiscount)}</span>
-                                                                    </div>
-                                                                    <div>
-                                                                        <label className="text-[9px] font-bold text-gray-500 uppercase block mb-1">Chọn Voucher Ví</label>
-                                                                        <select value={newBooking.voucherId} onChange={(e) => setNewBooking(prev => ({ ...prev, voucherId: e.target.value }))} className="w-full bg-slate-950 border border-gray-800 rounded-lg px-2 py-1.5 text-xs text-white">
-                                                                            <option value="">-- Chọn voucher --</option>
-                                                                            {db.redemptions?.filter(r => r.customerId === currentUser.customer.customerId && r.status === 'Active').map(r => (
-                                                                                <option key={r.redemptionId} value={r.redemptionId}>{db.rewards.find(rw => rw.rewardId === r.rewardId)?.rewardName}</option>
-                                                                            ))}
-                                                                        </select>
-                                                                    </div>
-                                                                    {costs.voucherDiscount > 0 && (
-                                                                        <div className="flex justify-between">
-                                                                            <span className="text-gray-400">Giảm trừ Voucher:</span>
-                                                                            <span className="font-bold text-rose-400">-{formatVnd(costs.voucherDiscount)}</span>
-                                                                        </div>
-                                                                    )}
-                                                                    <div className="border-t border-gray-800 pt-2 flex justify-between font-bold text-sm text-cyan-400">
-                                                                        <span>Tổng thanh toán:</span>
-                                                                        <span>{formatVnd(costs.final)}</span>
-                                                                    </div>
-                                                                </div>
-                                                                <div className="flex gap-2">
-                                                                    <button onClick={() => setBookingStep(2)} className="w-1/3 bg-slate-800 hover:bg-slate-700 text-white font-bold py-2.5 rounded-xl text-xs">Quay Lại</button>
-                                                                    <button onClick={submitBooking} className="w-2/3 bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-2.5 rounded-xl text-xs shadow-md">Xác Nhận Đặt</button>
-                                                                </div>
-                                                            </div>
-                                                        );
-                                                    })()}
-                                                </div>
-                                            )}
-
-                                            {/* Subtab: Vehicles list Mobile */}
-                                            {activeCustomerSubTab === 'vehicles' && (
-                                                <div className="flex flex-col gap-3">
-                                                    <h3 className="text-sm font-bold text-white uppercase tracking-wider">Đăng Ký Xe Máy</h3>
-                                                    <form onSubmit={(e) => { e.preventDefault(); triggerOtp("vehicle", vehicleForm); }} className="bg-slate-900 border border-gray-800 p-3.5 rounded-xl flex flex-col gap-2.5">
-                                                        <input required value={vehicleForm.licensePlate} onChange={(e) => setVehicleForm(prev => ({ ...prev, licensePlate: e.target.value }))} placeholder="Biển Số Xe (59A-123.45)" className="w-full bg-slate-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white" />
-                                                        <input required value={vehicleForm.vehicleName} onChange={(e) => setVehicleForm(prev => ({ ...prev, vehicleName: e.target.value }))} placeholder="Tên Gợi Nhớ (SH Đen)" className="w-full bg-slate-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white" />
-                                                        <div className="grid grid-cols-2 gap-2">
-                                                            <input required value={vehicleForm.brand} onChange={(e) => setVehicleForm(prev => ({ ...prev, brand: e.target.value }))} placeholder="Hãng (Honda)" className="w-full bg-slate-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white" />
-                                                            <input required value={vehicleForm.model} onChange={(e) => setVehicleForm(prev => ({ ...prev, model: e.target.value }))} placeholder="Đời (SH 150i)" className="w-full bg-slate-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white" />
-                                                        </div>
-                                                        <button type="submit" className="bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-2 rounded-xl text-xs mt-1.5 shadow">Đăng Ký Xe qua OTP</button>
+                                        {activeCustomerSubTab === 'vehicles' && (
+                                            <div className="flex flex-col gap-6">
+                                                <div className="glass-card rounded-2xl p-6 border border-gray-800">
+                                                    <h3 className="text-base font-bold text-white mb-4">Đăng Ký Xe Máy Mới</h3>
+                                                    <form onSubmit={(e) => { e.preventDefault(); triggerOtp("vehicle", vehicleForm); }} className="grid grid-cols-2 gap-4">
+                                                        <div><input required value={vehicleForm.licensePlate} onChange={(e) => setVehicleForm(prev => ({ ...prev, licensePlate: e.target.value }))} placeholder="Biển Số Xe" className="w-full bg-brand-darker border border-gray-800 rounded-xl px-4 py-3 text-white" /></div>
+                                                        <div><input required value={vehicleForm.vehicleName} onChange={(e) => setVehicleForm(prev => ({ ...prev, vehicleName: e.target.value }))} placeholder="Tên Xe gợi nhớ" className="w-full bg-brand-darker border border-gray-800 rounded-xl px-4 py-3 text-white" /></div>
+                                                        <div><input required value={vehicleForm.brand} onChange={(e) => setVehicleForm(prev => ({ ...prev, brand: e.target.value }))} placeholder="Hãng sản xuất" className="w-full bg-brand-darker border border-gray-800 rounded-xl px-4 py-3 text-white" /></div>
+                                                        <div><input required value={vehicleForm.model} onChange={(e) => setVehicleForm(prev => ({ ...prev, model: e.target.value }))} placeholder="Dòng xe" className="w-full bg-brand-darker border border-gray-800 rounded-xl px-4 py-3 text-white" /></div>
+                                                        <button type="submit" className="col-span-2 bg-cyan-500 text-white font-bold py-3 rounded-xl shadow">Đăng Ký Xe qua OTP</button>
                                                     </form>
+                                                </div>
 
-                                                    <div className="flex flex-col gap-2">
-                                                        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wide">Xe Liên Kết Của Bạn</span>
+                                                <div className="glass-card rounded-2xl p-6 border border-gray-800">
+                                                    <h3 className="text-base font-bold text-white mb-4">Danh Sách Xe Đang Liên Kết</h3>
+                                                    <div className="grid grid-cols-2 gap-4">
                                                         {db.vehicles?.filter(v => v.customerId === currentUser.customer.customerId).map(v => (
-                                                            <div key={v.vehicleId} className="bg-slate-900/60 border border-gray-800 rounded-xl p-3 flex justify-between items-center text-xs">
+                                                            <div key={v.vehicleId} className="bg-brand-darker border border-gray-800 rounded-xl p-4 flex justify-between items-center">
                                                                 <div>
                                                                     <div className="font-bold text-white">{v.vehicleName}</div>
-                                                                    <div className="text-cyan-400 font-semibold mt-0.5">{v.licensePlate}</div>
+                                                                    <div className="text-sm text-cyan-400 font-semibold mt-1">{v.licensePlate}</div>
                                                                 </div>
-                                                                <button onClick={() => {
-                                                                    if (confirm("Hủy liên kết xe này?")) saveTable("vehicles", db.vehicles.filter(x => x.vehicleId !== v.vehicleId));
-                                                                }} className="text-rose-400 p-1 bg-rose-950/20 border border-rose-900 rounded-lg"><i data-lucide="trash-2" className="w-4 h-4"></i></button>
+                                                                <button onClick={() => saveTable("vehicles", db.vehicles.filter(x => x.vehicleId !== v.vehicleId))} className="bg-rose-950/20 text-rose-400 p-2 rounded border border-rose-900"><i data-lucide="trash-2" className="w-4 h-4"></i></button>
                                                             </div>
                                                         ))}
                                                     </div>
                                                 </div>
-                                            )}
+                                            </div>
+                                        )}
 
-                                            {/* Subtab: Redeem Rewards Mobile */}
-                                            {activeCustomerSubTab === 'rewards' && (
-                                                <div className="flex flex-col gap-3">
-                                                    <h3 className="text-sm font-bold text-white uppercase tracking-wider">Đổi Quà Tích Điểm</h3>
-                                                    <div className="flex flex-col gap-2">
-                                                        {db.rewards?.map(r => (
-                                                            <div key={r.rewardId} className="bg-slate-900 border border-gray-800 rounded-xl p-3 flex justify-between items-center text-xs">
-                                                                <div>
-                                                                    <div className="font-bold text-white">{r.rewardName}</div>
-                                                                    <div className="text-[10px] text-gray-500 mt-0.5">Yêu cầu: {r.pointCost} Pts</div>
-                                                                </div>
-                                                                <button 
-                                                                    disabled={currentUser.customer.pointBalance < r.pointCost}
-                                                                    onClick={() => redeemReward(r)}
-                                                                    className={`px-3 py-1.5 rounded-lg font-bold text-[10px] ${currentUser.customer.pointBalance >= r.pointCost ? 'bg-cyan-500 text-white shadow' : 'bg-gray-800 text-gray-500'}`}>
-                                                                    Đổi
-                                                                </button>
+                                        {activeCustomerSubTab === 'rewards' && (
+                                            <div className="glass-card rounded-2xl p-6 border border-gray-800">
+                                                <h3 className="text-base font-bold text-white mb-4">Đổi Điểm Thưởng</h3>
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    {db.rewards?.map(r => (
+                                                        <div key={r.rewardId} className="bg-brand-darker border border-gray-800 rounded-xl p-4 flex justify-between items-center">
+                                                            <div>
+                                                                <div className="font-bold text-white">{r.rewardName}</div>
+                                                                <div className="text-xs text-gray-500 mt-1">Hạng tối thiểu: {db.tiers?.find(t => t.tierId === r.minTierId)?.tierName}</div>
+                                                                <div className="text-cyan-400 font-bold mt-1">{r.pointCost} Pts</div>
                                                             </div>
-                                                        ))}
-                                                    </div>
+                                                            <button disabled={currentUser.customer.pointBalance < r.pointCost} onClick={() => redeemReward(r)} className="bg-cyan-500 disabled:bg-gray-800 text-white font-bold py-2 px-4 rounded">Đổi Quà</button>
+                                                        </div>
+                                                    ))}
                                                 </div>
-                                            )}
+                                            </div>
+                                        )}
 
-                                            {/* Subtab: Profile Mobile */}
-                                            {activeCustomerSubTab === 'profile' && (
-                                                <div className="flex flex-col gap-3.5">
-                                                    <h3 className="text-sm font-bold text-white uppercase tracking-wider">Hồ Sơ Của Bạn</h3>
-                                                    <div className="bg-slate-900 border border-gray-800 p-3.5 rounded-xl flex flex-col gap-3 text-xs">
-                                                        <div>
-                                                            <span className="text-[10px] text-gray-500 block">Tên Hiển Thị:</span>
-                                                            <span className="font-bold text-white text-sm">{currentUser.fullName}</span>
-                                                        </div>
-                                                        <div>
-                                                            <span className="text-[10px] text-gray-500 block">Đại chỉ Email:</span>
-                                                            <span className="font-bold text-white text-sm">{currentUser.email}</span>
-                                                        </div>
-                                                        <div className="border-t border-gray-800/80 pt-3">
-                                                            <span className="text-[10px] text-gray-500 block mb-1">Mật khẩu hiện tại:</span>
-                                                            <input type="password" value={profileForm.currentPassword} onChange={(e) => setProfileForm(prev => ({ ...prev, currentPassword: e.target.value }))} className="w-full bg-slate-950 border border-gray-800 rounded-lg px-2.5 py-1.5 text-white" />
-                                                        </div>
-                                                        <div>
-                                                            <span className="text-[10px] text-gray-500 block mb-1">Mật khẩu mới:</span>
-                                                            <input type="password" value={profileForm.newPassword} onChange={(e) => setProfileForm(prev => ({ ...prev, newPassword: e.target.value }))} className="w-full bg-slate-950 border border-gray-800 rounded-lg px-2.5 py-1.5 text-white" />
-                                                        </div>
-                                                        <button onClick={() => {
-                                                            const updated = db.accounts.map(a => {
-                                                                if (a.accountId === currentUser.accountId) {
-                                                                    if (profileForm.newPassword && profileForm.currentPassword !== a.password) {
-                                                                        alert("Sai mật khẩu hiện tại!");
-                                                                        return a;
-                                                                    }
-                                                                    return { ...a, password: profileForm.newPassword || a.password };
-                                                                }
-                                                                return a;
-                                                            });
-                                                            saveTable("accounts", updated);
-                                                            alert("Cập nhật mật khẩu thành công!");
-                                                        }} className="bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-2 rounded-xl mt-1.5 shadow">Cập Nhật Hồ Sơ</button>
-                                                    </div>
-
-                                                    <button onClick={handleLogout} className="w-full bg-rose-950/20 text-rose-400 hover:bg-rose-950/40 border border-rose-900 font-bold py-2.5 rounded-xl text-xs transition-all duration-300">
-                                                        Đăng Xuất Khỏi Thiết Bị
-                                                    </button>
+                                        {activeCustomerSubTab === 'profile' && (
+                                            <div className="glass-card rounded-2xl p-6 border border-gray-800">
+                                                <h3 className="text-base font-bold text-white mb-6">Thông Tin Cá Nhân</h3>
+                                                <div className="flex flex-col gap-4 text-sm">
+                                                    <div><span className="text-gray-500">Họ tên:</span> <span className="font-bold text-white">{currentUser.fullName}</span></div>
+                                                    <div><span className="text-gray-500">Email:</span> <span className="font-bold text-white">{currentUser.email}</span></div>
                                                 </div>
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Mobile Device Bottom Navigation Bar */}
-                                {isLoggedIn && (
-                                    <div className="mobile-nav-bar">
-                                        <button onClick={() => setActiveCustomerSubTab("dashboard")} className={`flex flex-col items-center gap-0.5 text-[9px] font-bold ${activeCustomerSubTab === 'dashboard' ? 'text-cyan-400' : 'text-gray-500'}`}>
-                                            <i data-lucide="layout-dashboard" className="w-4.5 h-4.5"></i>
-                                            Home
-                                        </button>
-                                        <button onClick={() => { setActiveCustomerSubTab("booking"); setBookingStep(1); }} className={`flex flex-col items-center gap-0.5 text-[9px] font-bold ${activeCustomerSubTab === 'booking' ? 'text-cyan-400' : 'text-gray-500'}`}>
-                                            <i data-lucide="calendar" className="w-4.5 h-4.5"></i>
-                                            Đặt Lịch
-                                        </button>
-                                        <button onClick={() => setActiveCustomerSubTab("vehicles")} className={`flex flex-col items-center gap-0.5 text-[9px] font-bold ${activeCustomerSubTab === 'vehicles' ? 'text-cyan-400' : 'text-gray-500'}`}>
-                                            <i data-lucide="bike" className="w-4.5 h-4.5"></i>
-                                            Xe Máy
-                                        </button>
-                                        <button onClick={() => setActiveCustomerSubTab("rewards")} className={`flex flex-col items-center gap-0.5 text-[9px] font-bold ${activeCustomerSubTab === 'rewards' ? 'text-cyan-400' : 'text-gray-500'}`}>
-                                            <i data-lucide="gift" className="w-4.5 h-4.5"></i>
-                                            Đổi Quà
-                                        </button>
-                                        <button onClick={() => setActiveCustomerSubTab("profile")} className={`flex flex-col items-center gap-0.5 text-[9px] font-bold ${activeCustomerSubTab === 'profile' ? 'text-cyan-400' : 'text-gray-500'}`}>
-                                            <i data-lucide="user" className="w-4.5 h-4.5"></i>
-                                            Hồ Sơ
-                                        </button>
+                                            </div>
+                                        )}
                                     </div>
-                                )}
-
-                                {/* Mobile Device Home Indicator */}
-                                <div className="mobile-home-indicator"></div>
-                            </div>
+                                </div>
+                            )
                         )}
 
                         {/* --- ADMINISTRATOR DESKTOP PORTAL VIEW --- */}
-                        {isLoggedIn && roleTab === 'admin' && currentUser.role === 'Admin' ? (
+                        {isLoggedIn && roleTab === 'admin' && currentUser.role === 'Admin' && (
                             <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 w-full">
                                 <div className="lg:col-span-1 glass-card rounded-2xl p-4 border border-gray-800 flex flex-col gap-2">
                                     <div className="p-4 border-b border-gray-800 mb-2 text-center lg:text-left">
@@ -1190,37 +1367,29 @@
                                     </div>
                                     
                                     <button onClick={() => setActiveAdminSubTab("queue")} className={`w-full text-left px-4 py-3 rounded-xl text-sm font-semibold flex items-center gap-3 transition-all duration-300 ${activeAdminSubTab === 'queue' ? 'bg-violet-950/50 text-violet-400 border border-violet-900' : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800/30'}`}>
-                                        <i data-lucide="list-todo" className="w-5 h-5"></i>
-                                        Hàng Đợi Rửa Xe
+                                        <i data-lucide="list-todo" className="w-5 h-5"></i> Hàng Đợi Rửa Xe
                                     </button>
                                     <button onClick={() => setActiveAdminSubTab("bookings")} className={`w-full text-left px-4 py-3 rounded-xl text-sm font-semibold flex items-center gap-3 transition-all duration-300 ${activeAdminSubTab === 'bookings' ? 'bg-violet-950/50 text-violet-400 border border-violet-900' : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800/30'}`}>
-                                        <i data-lucide="calendar-days" className="w-5 h-5"></i>
-                                        Quản Lý Lịch Hẹn
+                                        <i data-lucide="calendar-days" className="w-5 h-5"></i> Quản Lý Lịch Hẹn
                                     </button>
                                     <button onClick={() => setActiveAdminSubTab("customers")} className={`w-full text-left px-4 py-3 rounded-xl text-sm font-semibold flex items-center gap-3 transition-all duration-300 ${activeAdminSubTab === 'customers' ? 'bg-violet-950/50 text-violet-400 border border-violet-900' : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800/30'}`}>
-                                        <i data-lucide="users" className="w-5 h-5"></i>
-                                        Khách Hàng
+                                        <i data-lucide="users" className="w-5 h-5"></i> Khách Hàng
                                     </button>
                                     <button onClick={() => setActiveAdminSubTab("services")} className={`w-full text-left px-4 py-3 rounded-xl text-sm font-semibold flex items-center gap-3 transition-all duration-300 ${activeAdminSubTab === 'services' ? 'bg-violet-950/50 text-violet-400 border border-violet-900' : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800/30'}`}>
-                                        <i data-lucide="pocket-knife" className="w-5 h-5"></i>
-                                        Gói Rửa & Dịch Vụ
+                                        <i data-lucide="pocket-knife" className="w-5 h-5"></i> Gói Rửa & Dịch Vụ
                                     </button>
                                     <button onClick={() => setActiveAdminSubTab("promotions")} className={`w-full text-left px-4 py-3 rounded-xl text-sm font-semibold flex items-center gap-3 transition-all duration-300 ${activeAdminSubTab === 'promotions' ? 'bg-violet-950/50 text-violet-400 border border-violet-900' : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800/30'}`}>
-                                        <i data-lucide="ticket" className="w-5 h-5"></i>
-                                        Khuyến Mãi & Quà
+                                        <i data-lucide="ticket" className="w-5 h-5"></i> Khuyến Mãi & Quà
                                     </button>
                                     <button onClick={() => setActiveAdminSubTab("tiers")} className={`w-full text-left px-4 py-3 rounded-xl text-sm font-semibold flex items-center gap-3 transition-all duration-300 ${activeAdminSubTab === 'tiers' ? 'bg-violet-950/50 text-violet-400 border border-violet-900' : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800/30'}`}>
-                                        <i data-lucide="award" className="w-5 h-5"></i>
-                                        Cấu Hình Tiers
+                                        <i data-lucide="award" className="w-5 h-5"></i> Cấu Hinh Tiers
                                     </button>
                                     <button onClick={() => setActiveAdminSubTab("dashboard")} className={`w-full text-left px-4 py-3 rounded-xl text-sm font-semibold flex items-center gap-3 transition-all duration-300 ${activeAdminSubTab === 'dashboard' ? 'bg-violet-950/50 text-violet-400 border border-violet-900' : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800/30'}`}>
-                                        <i data-lucide="bar-chart-3" className="w-5 h-5"></i>
-                                        Báo Cáo Thống Kê
+                                        <i data-lucide="bar-chart-3" className="w-5 h-5"></i> Báo Cáo Thống Kê
                                     </button>
                                     
                                     <button onClick={handleLogout} className="w-full text-left px-4 py-3 rounded-xl text-sm font-semibold text-rose-400 hover:bg-rose-950/20 hover:text-rose-300 flex items-center gap-3 transition-all duration-300 mt-auto">
-                                        <i data-lucide="log-out" className="w-5 h-5"></i>
-                                        Đăng Xuất
+                                        <i data-lucide="log-out" className="w-5 h-5"></i> Đăng Xuất
                                     </button>
                                 </div>
 
@@ -1228,7 +1397,7 @@
                                     {activeAdminSubTab === 'queue' && (
                                         <div className="glass-card rounded-2xl p-6 border border-gray-800">
                                             <div className="flex justify-between items-center mb-6">
-                                                <h3 className="text-base font-bold text-white">Hàng Đợi Rửa Xe</h3>
+                                                <h3 className="text-base font-bold text-white">Quản Lý Hàng Đợi Rửa Xe</h3>
                                                 <button 
                                                     onClick={() => {
                                                         const plate = prompt("Nhập Biển Số Xe khách vãng lai:");
@@ -1715,8 +1884,8 @@
                                         </div>
                                     )}
                                 </div>
-                            </div>
-                        ) : null}
+                            )
+                        )}
 
                         {/* --- DEVELOPER VIEW: DATABASE INSPECTOR --- */}
                         {roleTab === 'db-inspector' && (
@@ -1857,7 +2026,7 @@
                                 </div>
 
                                 <div className="flex gap-2">
-                                    <button onClick={() => confirmCheckoutPayment(invoiceModal.bookingId, invoiceModal.finalPrice, "Tiền Mặt (Cash)")} className="w-1/2 bg-violet-600 hover:bg-violet-700 text-white font-bold py-3 rounded-xl text-xs transition-all duration-300">
+                                    <button onClick={() => confirmCheckoutPayment(invoiceModal.bookingId, invoiceModal.finalPrice, "Tiền Một (Cash)")} className="w-1/2 bg-violet-600 hover:bg-violet-700 text-white font-bold py-3 rounded-xl text-xs transition-all duration-300">
                                         Tiền Mặt (Cash)
                                     </button>
                                     <button onClick={() => confirmCheckoutPayment(invoiceModal.bookingId, invoiceModal.finalPrice, "Quẹt Thẻ (Card)")} className="w-1/2 bg-gray-800 hover:bg-gray-700 text-white font-bold py-3 rounded-xl text-xs border border-gray-700 transition-all duration-300">
