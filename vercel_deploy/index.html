@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AutoWash Pro - Smart Automated Car Wash Management System</title>
+    <title>AutoWash Pro - Premium Smart Car Wash Management System</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts: Inter & Material Symbols -->
@@ -14,8 +14,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js" crossorigin></script>
     <!-- Babel Standalone CDNJS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.24.7/babel.min.js" crossorigin></script>
-    <!-- Lucide Icons (as fallback / extra support) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.407.0/umd/lucide.min.js" crossorigin></script>
     
     <style>
         body {
@@ -31,7 +29,7 @@
             background: transparent;
         }
         ::-webkit-scrollbar-thumb {
-            background: rgba(156, 163, 175, 0.5);
+            background: rgba(37, 99, 235, 0.3);
             border-radius: 4px;
         }
         /* Soft Shadow Style for Material Look */
@@ -120,20 +118,28 @@
         ];
 
         const INITIAL_CUSTOMERS = [
-            { customerId: "C001", accountId: "A002", pointBalance: 420, tierId: "T003" } // Gold Tier
+            { customerId: "C001", accountId: "A002", pointBalance: 480, tierId: "T003" } // Gold Tier
         ];
 
         const INITIAL_VEHICLES = [
             { vehicleId: "V001", customerId: "C001", licensePlate: "29A-999.99", brand: "VinFast", model: "VF 8", vehicleName: "VF 8 Đen bóng", registeredAt: "2026-06-10T08:00:00Z" },
-            { vehicleId: "V002", customerId: "C001", licensePlate: "30E-888.88", brand: "Mazda", model: "Mazda 3", vehicleName: "Mazda 3 Trắng", registeredAt: "2026-07-01T10:00:00Z" }
+            { vehicleId: "V002", customerId: "C001", licensePlate: "30E-888.88", brand: "Mazda", model: "Mazda 3", vehicleName: "Mazda Trắng", registeredAt: "2026-07-01T10:00:00Z" }
         ];
 
         const INITIAL_SERVICES = [
-            { serviceId: "S001", serviceName: "Rửa Ô tô Tiêu Chuẩn (Standard Car Wash)", category: "Wash Package", basePrice: 60000, estimateMinutes: 20, rating: 4.8, reviewsCount: 128, description: "Rửa bọt tuyết, hút bụi thảm chân, sấy khô." },
-            { serviceId: "S002", serviceName: "Rửa & Chăm sóc Cao cấp (Premium Car Detailing)", category: "Wash Package", basePrice: 120000, estimateMinutes: 35, rating: 4.9, reviewsCount: 254, description: "Rửa bọt tuyết 3 lớp, đánh bóng lốp, vệ sinh nội thất cơ bản, xịt khử mùi cabin." },
-            { serviceId: "S003", serviceName: "Vệ Sinh Khoang Máy chuyên sâu", category: "Add-on", basePrice: 150000, estimateMinutes: 30, rating: 4.7, reviewsCount: 64, description: "Dọn dẹp dầu mỡ dư thừa, phủ bóng dưỡng dây điện khoang máy." },
-            { serviceId: "S004", serviceName: "Đánh Bóng Gầm chống rỉ", category: "Add-on", basePrice: 80000, estimateMinutes: 15, rating: 4.6, reviewsCount: 42, description: "Xịt dung dịch bảo vệ gầm và cổ xả." },
-            { serviceId: "S005", serviceName: "Khử Khuẩn Ozone nội thất", category: "Add-on", basePrice: 50000, estimateMinutes: 10, rating: 4.9, reviewsCount: 88, description: "Sử dụng máy Ozone tiêu diệt 99% vi khuẩn, ẩm mốc cabin." }
+            { serviceId: "S001", serviceName: "Exterior Car Wash", category: "Wash Package", basePrice: 80000, estimateMinutes: 20, rating: 4.8, reviewsCount: 154, description: "Rửa vỏ xe bọt tuyết chuyên sâu, tẩy bụi sơn sơ bộ, làm sạch la-zăng, xịt gầm chống rỉ sét.", includedFeatures: ["Rửa bọt tuyết vỏ ngoài", "Lau khô bề mặt sơn", "Xịt bóng cao su dưỡng lốp", "Xịt gầm sơ bộ"] },
+            { serviceId: "S002", serviceName: "Interior Vacuum Cleaning", category: "Wash Package", basePrice: 60000, estimateMinutes: 15, rating: 4.7, reviewsCount: 98, description: "Hút bụi nội thất xe hơi toàn bộ thảm sàn, ghế ngồi và các khe kẽ bảng điều khiển cabin.", includedFeatures: ["Hút bụi thảm sàn chân", "Lau dọn kẽ ghế ngồi", "Vệ sinh taplo bằng dung dịch dưỡng chuyên dụng"] },
+            { serviceId: "S003", serviceName: "Premium Full Wash", category: "Wash Package", basePrice: 220000, estimateMinutes: 50, rating: 4.9, reviewsCount: 320, description: "Combo làm sạch khoang ngoài chuyên sâu, xịt gầm chi tiết, hút bụi nội thất & dưỡng bóng lốp.", includedFeatures: ["Rửa bọt tuyết 3 lớp", "Xịt gầm áp lực cao", "Hút bụi & lau dọn nội thất chuyên sâu", "Phủ lớp bảo vệ sơn cơ bản"] },
+            { serviceId: "S004", serviceName: "Wax & Polish", category: "Wash Package", basePrice: 380050, estimateMinutes: 60, rating: 4.6, reviewsCount: 75, description: "Tẩy nhựa đường bám dính bề mặt, đánh bóng xóa xước dăm bề mặt sơn xe tăng độ bóng bảy.", includedFeatures: ["Tẩy ố nhựa đường", "Đánh bóng bằng xi bóng 3M", "Phủ lớp Wax wax sáp bảo vệ bề mặt sơn"] },
+            { serviceId: "S005", serviceName: "Ceramic Coating", category: "Wash Package", basePrice: 1800000, estimateMinutes: 180, rating: 4.9, reviewsCount: 52, description: "Phủ lớp thủy tinh bảo vệ sơn xe chống oxy hóa, tia cực tím UV và tạo hiệu ứng lá sen chống bám nước.", includedFeatures: ["Hiệu chỉnh bề mặt sơn 3 bước", "Phủ 2 lớp Ceramic 9H cao cấp", "Bảo hành độ bóng sơn 12 tháng"] },
+            { serviceId: "S006", serviceName: "Engine Cleaning", category: "Add-on", basePrice: 250000, estimateMinutes: 40, rating: 4.8, reviewsCount: 64, description: "Dọn dẹp dầu mỡ, cặn bẩn bám khoang máy bằng hơi nước nóng, dưỡng bóng dây điện an toàn.", includedFeatures: ["Xịt hơi nước nóng khoang máy", "Dọn dẹp chi tiết kẽ máy", "Phủ dưỡng chống chuột cắn dây điện"] },
+            { serviceId: "S007", serviceName: "Tire Cleaning & Shine", category: "Add-on", basePrice: 40000, estimateMinutes: 10, rating: 4.7, reviewsCount: 110, description: "Làm sạch lazang sâu, má phanh, phủ lớp dưỡng bóng cao su chống nứt nẻ lốp xe.", includedFeatures: ["Tẩy ố vàng má phanh", "Làm sạch la-zăng chuyên sâu", "Dưỡng chất chống lão hóa cao su lốp"] },
+            { serviceId: "S008", serviceName: "Glass Cleaning", category: "Add-on", basePrice: 50000, estimateMinutes: 15, rating: 4.5, reviewsCount: 38, description: "Tẩy mốc ố kính lái, kính hông gương chiếu hậu tăng tầm nhìn rõ ràng khi đi mưa lớn.", includedFeatures: ["Tẩy ố kính lái", "Phủ lớp Nano kháng nước", "Vệ sinh gạt mưa"] },
+            { serviceId: "S009", serviceName: "Underbody Wash", category: "Add-on", basePrice: 70000, estimateMinutes: 10, rating: 4.6, reviewsCount: 89, description: "Sử dụng vòi phun áp lực cao chuyên dụng xịt rửa rỉ sét bám gầm xe.", includedFeatures: ["Xịt gầm áp lực cao", "Tẩy bùn đất gầm xe", "Chống gỉ sét"] },
+            { serviceId: "S010", serviceName: "Express Wash", category: "Wash Package", basePrice: 70000, estimateMinutes: 15, rating: 4.5, reviewsCount: 145, description: "Rửa nhanh vỏ xe bằng máy phun áp lực tự động, sấy khô nhanh.", includedFeatures: ["Rửa nhanh vỏ xe", "Sấy khô tự động", "Phù hợp xe ít bẩn"] },
+            { serviceId: "S011", serviceName: "SUV Wash Extra", category: "Wash Package", basePrice: 150000, estimateMinutes: 30, rating: 4.8, reviewsCount: 198, description: "Gói rửa tiêu chuẩn thiết kế riêng cho các dòng xe SUV/Bán tải gầm cao cỡ lớn.", includedFeatures: ["Rửa bọt tuyết SUV", "Lau khô & dưỡng lốp", "Vệ sinh bệ bước chân"] },
+            { serviceId: "S012", serviceName: "Sedan Wash Standard", category: "Wash Package", basePrice: 100000, estimateMinutes: 25, rating: 4.7, reviewsCount: 220, description: "Gói rửa tiêu chuẩn thiết kế tối ưu cho dòng xe Sedan/Hatchback đô thị.", includedFeatures: ["Rửa bọt tuyết Sedan", "Hút bụi nhẹ", "Dưỡng lốp tiêu chuẩn"] },
+            { serviceId: "S013", serviceName: "Motorbike Wash Special", category: "Wash Package", basePrice: 50000, estimateMinutes: 15, rating: 4.8, reviewsCount: 310, description: "Rửa chi tiết bọt tuyết cho xe máy, xịt bóng lốp & tra xích dầu bôi trơn.", includedFeatures: ["Rửa bọt tuyết xe máy", "Xịt bóng lốp", "Tra dầu xích xe"] }
         ];
 
         const INITIAL_TIERS = [
@@ -165,8 +171,8 @@
         ];
 
         const INITIAL_EMPLOYEES = [
-            { employeeId: "EMP001", fullName: "Trần Văn Bình", role: "Washing Staff", isActive: true, currentBay: "Wash Bay 1" },
-            { employeeId: "EMP002", fullName: "Lê Hoàng Long", role: "Detailing Expert", isActive: true, currentBay: "Detaling Bay A" }
+            { employeeId: "EMP001", fullName: "Trần Văn Bình", role: "Washing Staff", isActive: true, currentBay: "Wash Bay 1", performanceCount: 42 },
+            { employeeId: "EMP002", fullName: "Lê Hoàng Long", role: "Detailing Expert", isActive: true, currentBay: "Detaling Bay A", performanceCount: 56 }
         ];
 
         const INITIAL_NOTIFICATIONS = [
@@ -175,7 +181,13 @@
         ];
 
         const INITIAL_LOYALTY_TRANSACTIONS = [
-            { transactionId: "LT001", customerId: "C001", points: 420, reason: "Đăng ký thành viên & Đặt lịch", date: "2026-07-14T08:00:00Z" }
+            { transactionId: "LT001", customerId: "C001", points: 480, reason: "Đăng ký thành viên & Đặt lịch", date: "2026-07-14T08:00:00Z" }
+        ];
+
+        const MOCK_REVIEWS = [
+            { id: 1, author: "Trần Thế Vinh", text: "Dịch vụ rửa xe ở đây siêu sạch, nhân viên tỉ mỉ chùi từng kẽ la-zăng luôn.", rating: 5, date: "3 ngày trước" },
+            { id: 2, author: "Lê Mai Anh", text: "Đặt lịch trước qua app nên đến cái được rửa ngay không phải chờ đợi chút nào.", rating: 4, date: "5 ngày trước" },
+            { id: 3, author: "Hoàng Minh Đức", text: "Lớp bóng lốp sau khi rửa rất bền, đi mưa 2 ngày gầm vẫn sạch.", rating: 5, date: "1 tuần trước" }
         ];
 
         function App() {
@@ -194,7 +206,7 @@
             
             // Customer states (Desktop + Mobile)
             const [customerSubTab, setCustomerSubTab] = useState("home"); // "home" | "services" | "history" | "vehicles" | "loyalty" | "profile"
-            const [selectedService, setSelectedService] = useState(null); // For detail view
+            const [selectedService, setSelectedService] = useState(null); // For detail view modal
             const [bookingWizard, setBookingWizard] = useState({ step: 1, packageId: "", addOns: [], vehicleId: "", date: "", time: "", voucherId: "", costs: null });
             const [vehicleInput, setVehicleInput] = useState({ brand: "", model: "", licensePlate: "", vehicleName: "" });
             const [profileInput, setProfileInput] = useState({ fullName: "", password: "", phone: "0901234567" });
@@ -518,6 +530,11 @@
                 return v ? `${v.brand} ${v.model} (${v.licensePlate})` : "Không rõ";
             };
 
+            const getVehiclePlate = (vId) => {
+                const v = db.vehicles?.find(x => x.vehicleId === vId);
+                return v ? v.licensePlate : "N/A";
+            };
+
             const getCustomerName = (cId) => {
                 const c = db.customers?.find(x => x.customerId === cId);
                 const a = db.accounts?.find(x => x.accountId === c?.accountId);
@@ -640,7 +657,7 @@
                                         <div className="py-20 px-8 text-center bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-white relative">
                                             <div className="max-w-3xl mx-auto flex flex-col items-center">
                                                 <span className="bg-blue-500/30 border border-blue-400/40 text-blue-100 text-xs font-bold uppercase tracking-widest px-4 py-1.5 rounded-full mb-6">Trải nghiệm rửa xe kỷ nguyên số</span>
-                                                <h1 className="text-5xl font-black tracking-tight leading-tight">Hệ Thống Đặt Lịch Rửa Xe Tự Động Thông Minh</h1>
+                                                <h1 className="text-5xl font-black tracking-tight leading-tight">Hệ Thống Đặt Lịch & Quản Lý Rửa Ô tô Thông Minh</h1>
                                                 <p className="text-lg text-blue-100 mt-4 max-w-2xl font-light">Không còn phải xếp hàng chờ đợi. Đặt lịch rửa xe online, theo dõi hàng đợi thời gian thực, quét mã QR check-in & tích điểm thăng hạng nhận quà không giới hạn.</p>
                                                 <div className="mt-8 flex gap-3">
                                                     <button onClick={() => { if(isLoggedIn) { setCustomerSubTab("services"); } else { setAuthMode("login"); } }} className="bg-white text-blue-600 font-black text-base px-8 py-3.5 rounded-xl hover:bg-blue-50 transition shadow-lg">Đặt lịch ngay</button>
@@ -676,8 +693,8 @@
                                         {/* Landing Catalog List */}
                                         <div id="services" className="max-w-7xl w-full mx-auto px-6 pb-20">
                                             <div className="text-center mb-12">
-                                                <h2 className="text-3xl font-black text-slate-800 dark:text-white">Bảng Giá Các Dịch Vụ Rửa Xe AutoWash</h2>
-                                                <p className="text-slate-500 dark:text-slate-400 mt-2">Đa dạng lựa chọn chăm sóc chuyên nghiệp ô tô và xe ga của bạn</p>
+                                                <h2 className="text-3xl font-black text-slate-800 dark:text-white">Bảng Giá Các Dịch Vụ Chăm Sóc Xe Ô tô</h2>
+                                                <p className="text-slate-500 dark:text-slate-400 mt-2">Đa dạng lựa chọn chăm sóc chuyên nghiệp xế cưng của bạn</p>
                                             </div>
 
                                             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -692,26 +709,45 @@
                                                                 </div>
                                                             </div>
                                                             <h3 className="font-extrabold text-lg text-slate-800 dark:text-white mt-4">{s.serviceName}</h3>
-                                                            <p className="text-xs text-slate-400 mt-1"><i data-lucide="clock" className="w-3 h-3 inline-block mr-1"></i>Thời gian dự tính: {s.estimateMinutes} phút</p>
+                                                            <p className="text-xs text-slate-400 mt-1"><i data-lucide="clock" className="w-3 h-3 inline-block mr-1"></i>Thời gian: {s.estimateMinutes} phút</p>
                                                         </div>
                                                         <div className="p-6 flex-1 flex flex-col justify-between">
-                                                            <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed mb-6">{s.description}</p>
+                                                            <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed mb-4">{s.description}</p>
+                                                            
+                                                            {/* Included Features Bullet Points */}
+                                                            <div className="mb-6">
+                                                                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-2">Bao gồm các dịch vụ:</span>
+                                                                <div className="flex flex-wrap gap-1">
+                                                                    {s.includedFeatures?.map((f, i) => (
+                                                                        <span key={i} className="bg-slate-100 dark:bg-slate-750 text-[10px] text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded font-semibold">{f}</span>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+
                                                             <div className="flex justify-between items-center mt-auto">
                                                                 <div>
                                                                     <span className="text-[10px] text-slate-400 uppercase font-black block">Giá trọn gói</span>
                                                                     <span className="text-2xl font-black text-blue-600">{formatCurrency(s.basePrice)}</span>
                                                                 </div>
-                                                                <button 
-                                                                    onClick={() => {
-                                                                        if(!isLoggedIn) {
-                                                                            setAuthMode("login");
-                                                                        } else {
-                                                                            setCustomerSubTab("services");
-                                                                        }
-                                                                    }}
-                                                                    className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition">
-                                                                    Đặt lịch rửa
-                                                                </button>
+                                                                <div className="flex gap-2">
+                                                                    <button 
+                                                                        onClick={() => setSelectedService(s)}
+                                                                        className="bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 text-slate-850 dark:text-white font-bold text-xs px-3.5 py-2.5 rounded-xl transition">
+                                                                        Chi tiết
+                                                                    </button>
+                                                                    <button 
+                                                                        onClick={() => {
+                                                                            if(!isLoggedIn) {
+                                                                                setAuthMode("login");
+                                                                            } else {
+                                                                                setCustomerSubTab("services");
+                                                                                setBookingWizard(prev => ({ ...prev, packageId: s.serviceId, step: 2 }));
+                                                                            }
+                                                                        }}
+                                                                        className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition shadow">
+                                                                        Đặt lịch
+                                                                    </button>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -810,8 +846,8 @@
                                         <aside className="w-64 bg-slate-50 dark:bg-slate-900/40 border-r border-slate-200 dark:border-slate-800 p-4 flex flex-col gap-2">
                                             
                                             {/* Minimalist Membership Widget */}
-                                            <div className="p-4 bg-gradient-to-br from-blue-600 to-indigo-700 text-white rounded-2xl mb-4 relative overflow-hidden shadow-lg">
-                                                <span className="text-[10px] text-blue-200 uppercase font-black tracking-wide block">Loyalty Balance</span>
+                                            <div className="p-4 bg-gradient-to-br from-blue-600 to-indigo-700 text-white rounded-2xl mb-4 relative overflow-hidden shadow-lg animate-pulse">
+                                                <span className="text-[10px] text-blue-200 uppercase font-black tracking-wide block">Loyalty Points</span>
                                                 <div className="text-2xl font-black mt-1">{currentUser.customer?.pointBalance} Pts</div>
                                                 <div className="flex items-center gap-1 mt-3 text-xs bg-white/20 px-2 py-0.5 rounded-full w-max border border-white/10">
                                                     <span className="material-symbols-outlined text-[12px]">grade</span>
@@ -829,7 +865,7 @@
                                                 <span className="material-symbols-outlined text-[20px]">history</span> Lịch Sử Rửa Xe
                                             </button>
                                             <button onClick={() => setCustomerSubTab("vehicles")} className={`w-full text-left px-4 py-3 rounded-xl text-sm font-bold flex items-center gap-3 transition ${customerSubTab === 'vehicles' ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-600 border border-blue-100 dark:border-blue-900' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}>
-                                                <span className="material-symbols-outlined text-[20px]">directions_car</span> Quản Lý Ô tô
+                                                <span className="material-symbols-outlined text-[20px]">directions_car</span> Quản Lý Xe Ô tô
                                             </button>
                                             <button onClick={() => setCustomerSubTab("loyalty")} className={`w-full text-left px-4 py-3 rounded-xl text-sm font-bold flex items-center gap-3 transition ${customerSubTab === 'loyalty' ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-600 border border-blue-100 dark:border-blue-900' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}>
                                                 <span className="material-symbols-outlined text-[20px]">featured_seasonal_and_gifts</span> Đổi Quà Voucher
@@ -850,6 +886,43 @@
                                                         <span className="text-sm font-medium text-slate-400">{new Date().toLocaleDateString('vi-VN')}</span>
                                                     </div>
 
+                                                    {/* Live Queue Progress Tracker */}
+                                                    {db.bookings?.filter(b => b.customerId === currentUser.customer?.customerId && (b.status === 'Confirmed' || b.status === 'Washing' || b.status === 'Completed')).map(b => (
+                                                        <div key={b.bookingId} className="bg-blue-600 text-white rounded-2xl p-6 material-shadow-lg relative overflow-hidden flex flex-col gap-4">
+                                                            <div className="flex justify-between items-start">
+                                                                <div>
+                                                                    <span className="text-[10px] text-blue-200 uppercase font-black tracking-widest block">Theo dõi hàng đợi thời gian thực</span>
+                                                                    <h3 className="text-lg font-black mt-1">Lịch hẹn rửa xe: {b.bookingId}</h3>
+                                                                    <p className="text-xs text-blue-100 mt-1">{getVehicleNameStr(b.vehicleId)}</p>
+                                                                </div>
+                                                                <span className="material-symbols-outlined text-4xl opacity-20 font-black">pending_actions</span>
+                                                            </div>
+                                                            
+                                                            {/* Horizontal Progress Timeline */}
+                                                            <div className="flex items-center justify-between mt-4 relative">
+                                                                {/* Background Progress Line */}
+                                                                <div className="absolute top-1/2 left-0 right-0 h-1 bg-blue-700 -translate-y-1/2 z-0 rounded"></div>
+                                                                
+                                                                <div className="z-10 flex flex-col items-center gap-1.5">
+                                                                    <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${b.status === 'Confirmed' || b.status === 'Washing' || b.status === 'Completed' || b.status === 'Paid' ? 'bg-white text-blue-600' : 'bg-blue-800 text-blue-300'}`}>1</span>
+                                                                    <span className="text-[10px] font-bold">Xác nhận</span>
+                                                                </div>
+                                                                <div className="z-10 flex flex-col items-center gap-1.5">
+                                                                    <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${b.status === 'Washing' || b.status === 'Completed' || b.status === 'Paid' ? 'bg-white text-blue-600 animate-bounce' : 'bg-blue-800 text-blue-300'}`}>2</span>
+                                                                    <span className="text-[10px] font-bold">Đang Rửa</span>
+                                                                </div>
+                                                                <div className="z-10 flex flex-col items-center gap-1.5">
+                                                                    <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${b.status === 'Completed' || b.status === 'Paid' ? 'bg-white text-blue-600' : 'bg-blue-800 text-blue-300'}`}>3</span>
+                                                                    <span className="text-[10px] font-bold">Rửa Xong</span>
+                                                                </div>
+                                                                <div className="z-10 flex flex-col items-center gap-1.5">
+                                                                    <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${b.status === 'Paid' ? 'bg-white text-blue-600' : 'bg-blue-800 text-blue-300'}`}>4</span>
+                                                                    <span className="text-[10px] font-bold">Đã Thanh Toán</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+
                                                     {/* Overview Widgets Grid */}
                                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                                         <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-6 rounded-2xl material-shadow">
@@ -867,13 +940,13 @@
                                                             <div className="text-3xl font-black text-slate-900 dark:text-white mt-1">
                                                                 {db.vehicles?.filter(v => v.customerId === currentUser.customer?.customerId).length} xe
                                                             </div>
-                                                            <span className="text-[10px] text-slate-400 block mt-2 font-semibold">SH, Vespa, Exciter...</span>
+                                                            <span className="text-[10px] text-slate-400 block mt-2 font-semibold">VinFast, Mazda...</span>
                                                         </div>
                                                     </div>
 
                                                     {/* Latest Booking Banner */}
                                                     <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 material-shadow">
-                                                        <h3 className="font-extrabold text-base mb-4 text-slate-800 dark:text-white">Lịch đặt rửa xe của bạn</h3>
+                                                        <h3 className="font-extrabold text-base mb-4 text-slate-850 dark:text-white">Lịch đặt rửa xe của bạn</h3>
                                                         {db.bookings?.filter(b => b.customerId === currentUser.customer?.customerId).length === 0 ? (
                                                             <div className="text-center py-6 text-slate-400 text-sm">
                                                                 Bạn chưa có lịch hẹn rửa xe nào đang đặt.<br />
@@ -903,7 +976,7 @@
 
                                                     {/* Notification Panel */}
                                                     <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 material-shadow">
-                                                        <h3 className="font-extrabold text-base mb-4 text-slate-800 dark:text-white">Thông báo & Tin nhắn</h3>
+                                                        <h3 className="font-extrabold text-base mb-4 text-slate-850 dark:text-white">Thông báo & Tin nhắn</h3>
                                                         <div className="flex flex-col gap-3">
                                                             {notifications.map(n => (
                                                                 <div key={n.id} className="p-3 border-b border-slate-100 dark:border-slate-750 flex justify-between items-start text-sm">
@@ -923,7 +996,7 @@
                                             {customerSubTab === "services" && (
                                                 <div className="flex flex-col gap-6">
                                                     <div className="flex justify-between items-center">
-                                                        <h2 className="text-2xl font-black text-slate-800 dark:text-white">Đặt Lịch Hẹn Chăm Sóc Ô tô</h2>
+                                                        <h2 className="text-2xl font-black text-slate-800 dark:text-white">Đặt Lịch Hẹn Rửa Xe</h2>
                                                         <span className="text-xs bg-blue-100 text-blue-600 font-bold px-3 py-1.5 rounded-full uppercase">Wizard Step {bookingWizard.step} / 4</span>
                                                     </div>
 
@@ -944,11 +1017,22 @@
                                                             <h4 className="font-extrabold text-base text-slate-800 dark:text-white">Chọn Gói Rửa Ô tô Chính:</h4>
                                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                                 {db.services?.filter(s => s.category === 'Wash Package').map(s => (
-                                                                    <div key={s.serviceId} onClick={() => setBookingWizard(prev => ({ ...prev, packageId: s.serviceId }))} className={`p-5 rounded-xl border-2 cursor-pointer transition ${bookingWizard.packageId === s.serviceId ? 'bg-blue-50/50 dark:bg-blue-950/20 border-blue-500' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'}`}>
-                                                                        <div className="font-bold text-slate-800 dark:text-white text-base">{s.serviceName}</div>
-                                                                        <p className="text-xs text-slate-400 mt-1">Ước lượng: {s.estimateMinutes} phút | Đánh giá: {s.rating} ★</p>
-                                                                        <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">{s.description}</p>
-                                                                        <div className="text-right text-lg font-black text-blue-600 mt-3">{formatCurrency(s.basePrice)}</div>
+                                                                    <div key={s.serviceId} className={`p-5 rounded-xl border-2 transition flex flex-col justify-between ${bookingWizard.packageId === s.serviceId ? 'bg-blue-50/50 dark:bg-blue-950/20 border-blue-500' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'}`}>
+                                                                        <div onClick={() => setBookingWizard(prev => ({ ...prev, packageId: s.serviceId }))} className="cursor-pointer">
+                                                                            <div className="font-bold text-slate-800 dark:text-white text-base">{s.serviceName}</div>
+                                                                            <p className="text-xs text-slate-400 mt-1">Thời gian: {s.estimateMinutes} phút | Đánh giá: {s.rating} ★</p>
+                                                                            <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">{s.description}</p>
+                                                                            
+                                                                            <div className="mt-3 flex flex-wrap gap-1">
+                                                                                {s.includedFeatures?.map((f, i) => (
+                                                                                    <span key={i} className="bg-slate-100 dark:bg-slate-700 text-[9px] text-slate-500 dark:text-slate-300 px-2 py-0.5 rounded font-semibold">{f}</span>
+                                                                                ))}
+                                                                            </div>
+                                                                        </div>
+                                                                        <div className="flex justify-between items-center mt-5 border-t border-slate-100 dark:border-slate-700/80 pt-3">
+                                                                            <span className="text-xl font-black text-blue-600">{formatCurrency(s.basePrice)}</span>
+                                                                            <button onClick={() => setSelectedService(s)} className="bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 text-slate-850 dark:text-white font-bold text-[10px] px-3 py-1.5 rounded-lg transition">Xem Đánh giá</button>
+                                                                        </div>
                                                                     </div>
                                                                 ))}
                                                             </div>
@@ -989,7 +1073,7 @@
                                                     {/* WIZARD STEP 2: CHOOSE VEHICLE */}
                                                     {bookingWizard.step === 2 && (
                                                         <div className="flex flex-col gap-6">
-                                                            <h4 className="font-extrabold text-base text-slate-800 dark:text-white">Chọn Ô tô Thực Hiện Đặt Lịch:</h4>
+                                                            <h4 className="font-extrabold text-base text-slate-800 dark:text-white">Chọn Xe Ô tô Thực Hiện Đặt Lịch:</h4>
                                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                                 {db.vehicles?.filter(v => v.customerId === currentUser.customer?.customerId).map(v => (
                                                                     <div key={v.vehicleId} onClick={() => setBookingWizard(prev => ({ ...prev, vehicleId: v.vehicleId }))} className={`p-4 rounded-xl border-2 cursor-pointer transition ${bookingWizard.vehicleId === v.vehicleId ? 'bg-blue-50/50 dark:bg-blue-950/20 border-blue-500' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'}`}>
@@ -1118,7 +1202,7 @@
                                                             <thead>
                                                                 <tr className="border-b border-slate-100 dark:border-slate-700/80 text-slate-400 font-bold uppercase text-xs">
                                                                     <th className="pb-3">Mã Hẹn</th>
-                                                                    <th className="pb-3">Ô tô</th>
+                                                                    <th className="pb-3">Phương tiện</th>
                                                                     <th className="pb-3">Thời gian hẹn</th>
                                                                     <th className="pb-3">Hóa đơn</th>
                                                                     <th className="pb-3">Xếp Hàng status</th>
@@ -1128,7 +1212,7 @@
                                                             <tbody className="divide-y divide-slate-1050">
                                                                 {db.bookings?.filter(b => b.customerId === currentUser.customer?.customerId).map(b => (
                                                                     <tr key={b.bookingId} className="text-slate-300">
-                                                                        <td className="py-4 font-bold text-slate-800 dark:text-white">{b.bookingId}</td>
+                                                                        <td className="py-4 font-bold text-slate-880 dark:text-white">{b.bookingId}</td>
                                                                         <td className="py-4 text-slate-700 dark:text-slate-300">{getVehicleNameStr(b.vehicleId)}</td>
                                                                         <td className="py-4 text-slate-700 dark:text-slate-300">{b.scheduleAt.replace('T', ' ')}</td>
                                                                         <td className="py-4 text-blue-600 font-extrabold">{formatCurrency(b.finalPrice)}</td>
@@ -1137,13 +1221,11 @@
                                                                                 b.status === 'Paid' || b.status === 'Completed' ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-400' :
                                                                                 b.status === 'Confirmed' ? 'bg-blue-100 text-blue-600 dark:bg-blue-950 dark:text-blue-400' :
                                                                                 'bg-rose-100 text-rose-600'
-                                                                            }`}>
-                                                                                {b.status}
-                                                                            </span>
+                                                                            }`}>{b.status}</span>
                                                                         </td>
                                                                         <td className="py-4 text-right">
-                                                                            <button onClick={() => alert(`[CHECK-IN QR CODE]: Quét mã này tại quầy để check-in tự động cho mã ${b.bookingId}`)} className="bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-white p-2 rounded-lg font-bold text-xs flex items-center gap-1.5 ml-auto w-max">
-                                                                                <span className="material-symbols-outlined text-[16px]">qr_code_2</span> Show
+                                                                            <button onClick={() => alert(`[CHECK-IN QR CODE]: Quét mã này tại quầy để check-in tự động cho mã ${b.bookingId}`)} className="bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-white p-2 rounded-lg font-bold text-xs flex items-center gap-1.5 ml-auto w-max shadow">
+                                                                                <span className="material-symbols-outlined text-[16px]">qr_code_2</span> Show QR
                                                                             </button>
                                                                         </td>
                                                                     </tr>
@@ -1160,33 +1242,33 @@
                                                     
                                                     {/* Register Vehicle Widget */}
                                                     <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 material-shadow">
-                                                        <h3 className="font-extrabold text-base mb-4 text-slate-800 dark:text-white">Đăng ký liên kết ô tô mới</h3>
+                                                        <h3 className="font-extrabold text-base mb-4 text-slate-800 dark:text-white">Đăng ký liên kết xe ô tô mới</h3>
                                                         <form onSubmit={(e) => { e.preventDefault(); triggerOtpAuth("vehicle", vehicleInput); }} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                             <div>
                                                                 <label className="text-xs font-bold text-slate-400 block mb-2 uppercase">Biển Số Xe</label>
-                                                                <input required value={vehicleInput.licensePlate} onChange={(e) => setVehicleInput(prev => ({ ...prev, licensePlate: e.target.value }))} placeholder="29A-123.45" className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-250 dark:border-slate-700 p-3 rounded-xl text-sm outline-none text-slate-800 dark:text-white focus:border-blue-500" />
+                                                                <input required value={vehicleInput.licensePlate} onChange={(e) => setVehicleInput(prev => ({ ...prev, licensePlate: e.target.value }))} placeholder="30E-123.45" className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-250 dark:border-slate-700 p-3 rounded-xl text-sm outline-none text-slate-800 dark:text-white focus:border-blue-500" />
                                                             </div>
                                                             <div>
                                                                 <label className="text-xs font-bold text-slate-400 block mb-2 uppercase">Hãng Xe</label>
-                                                                <input required value={vehicleInput.brand} onChange={(e) => setVehicleInput(prev => ({ ...prev, brand: e.target.value }))} placeholder="VinFast" className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-250 dark:border-slate-700 p-3 rounded-xl text-sm outline-none text-slate-800 dark:text-white focus:border-blue-500" />
+                                                                <input required value={vehicleInput.brand} onChange={(e) => setVehicleInput(prev => ({ ...prev, brand: e.target.value }))} placeholder="VinFast / Mazda / Hyundai" className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-250 dark:border-slate-700 p-3 rounded-xl text-sm outline-none text-slate-800 dark:text-white focus:border-blue-500" />
                                                             </div>
                                                             <div>
                                                                 <label className="text-xs font-bold text-slate-400 block mb-2 uppercase">Dòng Xe</label>
-                                                                <input required value={vehicleInput.model} onChange={(e) => setVehicleInput(prev => ({ ...prev, model: e.target.value }))} placeholder="AirBlade 125" className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-250 dark:border-slate-700 p-3 rounded-xl text-sm outline-none text-slate-800 dark:text-white focus:border-blue-500" />
+                                                                <input required value={vehicleInput.model} onChange={(e) => setVehicleInput(prev => ({ ...prev, model: e.target.value }))} placeholder="VF 9 / Mazda 3" className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-250 dark:border-slate-700 p-3 rounded-xl text-sm outline-none text-slate-800 dark:text-white focus:border-blue-500" />
                                                             </div>
                                                             <div>
                                                                 <label className="text-xs font-bold text-slate-400 block mb-2 uppercase">Tên Xe Gợi Nhớ</label>
-                                                                <input required value={vehicleInput.vehicleName} onChange={(e) => setVehicleInput(prev => ({ ...prev, vehicleName: e.target.value }))} placeholder="SH Đen của Ba" className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-250 dark:border-slate-700 p-3 rounded-xl text-sm outline-none text-slate-800 dark:text-white focus:border-blue-500" />
+                                                                <input required value={vehicleInput.vehicleName} onChange={(e) => setVehicleInput(prev => ({ ...prev, vehicleName: e.target.value }))} placeholder="Xe VF 9 của Vợ" className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-250 dark:border-slate-700 p-3 rounded-xl text-sm outline-none text-slate-800 dark:text-white focus:border-blue-500" />
                                                             </div>
                                                             <button type="submit" className="md:col-span-2 bg-blue-600 hover:bg-blue-700 text-white font-extrabold py-3.5 rounded-xl text-xs transition shadow mt-2">
-                                                                Liên Kết Phương Tiện qua mã OTP
+                                                                Liên Kết Ô Tô qua mã OTP
                                                             </button>
                                                         </form>
                                                     </div>
 
                                                     {/* Vehicles List */}
                                                     <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 material-shadow">
-                                                        <h3 className="font-extrabold text-base mb-4 text-slate-800 dark:text-white">Ô tô liên kết của bạn</h3>
+                                                        <h3 className="font-extrabold text-base mb-4 text-slate-800 dark:text-white">Xe ô tô liên kết của bạn</h3>
                                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                             {db.vehicles?.filter(v => v.customerId === currentUser.customer?.customerId).map(v => (
                                                                 <div key={v.vehicleId} className="bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 p-4 rounded-xl flex justify-between items-center">
@@ -1330,11 +1412,11 @@
                                                 <span className="material-symbols-outlined text-blue-600 text-5xl font-black">local_car_wash</span>
                                             </div>
                                             <h1 className="text-3xl font-black tracking-tight">AutoWash Pro</h1>
-                                            <p className="text-sm text-blue-100 mt-2 font-light">Chăm sóc xe ga thông minh</p>
+                                            <p className="text-sm text-blue-100 mt-2 font-light">Chăm sóc ô tô tự động tối ưu</p>
                                         </div>
                                         <button 
                                             onClick={() => setMobileStage("onboarding")} 
-                                            className="w-full bg-white text-blue-600 font-extrabold py-4 rounded-2xl text-sm shadow shadow-white/10 hover:bg-blue-50 transition">
+                                            className="w-full bg-white text-blue-600 font-extrabold py-4 rounded-2xl text-sm shadow hover:bg-blue-50 transition">
                                             Bắt đầu ngay
                                         </button>
                                     </div>
@@ -1352,14 +1434,14 @@
                                                 <div className="flex flex-col items-center gap-6">
                                                     <span className="material-symbols-outlined text-blue-500 text-8xl font-bold">query_builder</span>
                                                     <h2 className="text-2xl font-black">Đặt Lịch Nhanh Chóng</h2>
-                                                    <p className="text-xs text-slate-400 max-w-[280px]">Chọn gói rửa xe ga của bạn, đặt trước ngày giờ chỉ trong 30 giây cực dễ dàng.</p>
+                                                    <p className="text-xs text-slate-400 max-w-[280px]">Chọn gói rửa xe, đặt trước ngày giờ chỉ trong 30 giây cực dễ dàng.</p>
                                                 </div>
                                             )}
                                             {onboardingIndex === 1 && (
                                                 <div className="flex flex-col items-center gap-6">
                                                     <span className="material-symbols-outlined text-blue-500 text-8xl font-bold">qr_code_2</span>
                                                     <h2 className="text-2xl font-black">Check-in một chạm</h2>
-                                                    <p className="text-xs text-slate-400 max-w-[280px]">Không cần ghi chép, xếp số giấy. Chỉ cần quét mã QR tại quầy rửa xe để check-in tức thì.</p>
+                                                    <p className="text-xs text-slate-400 max-w-[280px]">Không cần ghi chép, xếp số giấy. Chỉ cần quét mã QR tại quầy rửa xe để check-in tức thời.</p>
                                                 </div>
                                             )}
                                             {onboardingIndex === 2 && (
@@ -1406,7 +1488,7 @@
                                         </form>
                                         
                                         <div className="text-center text-xs text-slate-500 mt-4">
-                                            Hoặc đăng nhập Admin bằng tài khoản: <strong className="text-blue-500 block mt-1">admin@autowash.com / admin123</strong>
+                                            Đăng nhập Admin bằng tài khoản: <strong className="text-blue-500 block mt-1">admin@autowash.com / admin123</strong>
                                         </div>
                                     </div>
                                 )}
@@ -1492,7 +1574,7 @@
                                             {/* Subtab Mobile: SERVICES & BOOK WIZARD */}
                                             {customerSubTab === "services" && (
                                                 <div className="flex flex-col gap-4 text-xs">
-                                                    <h3 className="text-sm font-bold text-white uppercase tracking-wider">Đặt Lịch Rửa Xe Ga</h3>
+                                                    <h3 className="text-sm font-bold text-white uppercase tracking-wider">Đặt Lịch Rửa Ô tô</h3>
                                                     
                                                     {/* Mobile Wizard Steps */}
                                                     {bookingWizard.step === 1 && (
@@ -1625,11 +1707,11 @@
                                             {/* Subtab Mobile: VEHICLES */}
                                             {customerSubTab === "vehicles" && (
                                                 <div className="flex flex-col gap-3">
-                                                    <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Đăng ký ô tô</h3>
+                                                    <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Đăng ký xe ô tô</h3>
                                                     <form onSubmit={(e) => { e.preventDefault(); triggerOtpAuth("vehicle", vehicleInput); }} className="bg-slate-800 p-3 rounded-xl border border-slate-700 flex flex-col gap-2.5">
-                                                        <input required value={vehicleInput.licensePlate} onChange={(e) => setVehicleInput(prev => ({ ...prev, licensePlate: e.target.value }))} placeholder="Biển Số Xe (Ví dụ: 29A-999.99)" className="w-full bg-slate-900 border border-slate-750 px-3 py-2 rounded text-xs text-white" />
-                                                        <input required value={vehicleInput.brand} onChange={(e) => setVehicleInput(prev => ({ ...prev, brand: e.target.value }))} placeholder="Hãng (Honda, Yamaha)" className="w-full bg-slate-900 border border-slate-750 px-3 py-2 rounded text-xs text-white" />
-                                                        <input required value={vehicleInput.model} onChange={(e) => setVehicleInput(prev => ({ ...prev, model: e.target.value }))} placeholder="Dòng xe (SH, Vespa...)" className="w-full bg-slate-900 border border-slate-750 px-3 py-2 rounded text-xs text-white" />
+                                                        <input required value={vehicleInput.licensePlate} onChange={(e) => setVehicleInput(prev => ({ ...prev, licensePlate: e.target.value }))} placeholder="Biển Số Xe (Ví dụ: 30E-999.99)" className="w-full bg-slate-900 border border-slate-750 px-3 py-2 rounded text-xs text-white" />
+                                                        <input required value={vehicleInput.brand} onChange={(e) => setVehicleInput(prev => ({ ...prev, brand: e.target.value }))} placeholder="Hãng (VinFast, Mazda...)" className="w-full bg-slate-900 border border-slate-750 px-3 py-2 rounded text-xs text-white" />
+                                                        <input required value={vehicleInput.model} onChange={(e) => setVehicleInput(prev => ({ ...prev, model: e.target.value }))} placeholder="Dòng xe (VF8, Mazda 3...)" className="w-full bg-slate-900 border border-slate-750 px-3 py-2 rounded text-xs text-white" />
                                                         <input required value={vehicleInput.vehicleName} onChange={(e) => setVehicleInput(prev => ({ ...prev, vehicleName: e.target.value }))} placeholder="Tên Xe gợi nhớ" className="w-full bg-slate-900 border border-slate-750 px-3 py-2 rounded text-xs text-white" />
                                                         <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg text-xs mt-1">Liên Kết với mã OTP</button>
                                                     </form>
@@ -1690,7 +1772,7 @@
                                                 <span className="material-symbols-outlined text-[20px]">calendar_month</span>Đặt lịch
                                             </button>
                                             <button onClick={() => setCustomerSubTab("vehicles")} className={`flex flex-col items-center gap-0.5 text-[9px] font-bold ${customerSubTab === 'vehicles' ? 'text-blue-500' : 'text-slate-500'}`}>
-                                                <span className="material-symbols-outlined text-[20px]">directions_car</span>Ô tô
+                                                <span className="material-symbols-outlined text-[20px]">directions_car</span>Xe hơi
                                             </button>
                                             <button onClick={() => setCustomerSubTab("loyalty")} className={`flex flex-col items-center gap-0.5 text-[9px] font-bold ${customerSubTab === 'loyalty' ? 'text-blue-500' : 'text-slate-500'}`}>
                                                 <span className="material-symbols-outlined text-[20px]">military_tech</span>Đổi quà
@@ -1718,7 +1800,7 @@
                                             <div className="text-center mb-6">
                                                 <span className="material-symbols-outlined text-blue-600 text-5xl">admin_panel_settings</span>
                                                 <h3 className="text-2xl font-black text-slate-900 dark:text-white mt-2">Admin Portal</h3>
-                                                <p className="text-xs text-slate-400 mt-1">Hệ thống quản lý chuỗi rửa xe thông minh</p>
+                                                <p className="text-xs text-slate-400 mt-1">Hệ thống quản lý chuỗi rửa ô tô tự động thông minh</p>
                                             </div>
                                             
                                             <form onSubmit={(e) => { e.preventDefault(); runLogin(e.target.email.value, e.target.password.value, true); }} className="flex flex-col gap-4">
@@ -1800,6 +1882,67 @@
                                                         </div>
                                                     </div>
 
+                                                    {/* Additional Capstone Dashboard Widgets */}
+                                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                                        {/* Vehicles waiting / washing */}
+                                                        <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 material-shadow">
+                                                            <h3 className="font-extrabold text-sm text-slate-850 dark:text-white mb-4">Hàng đợi rửa xe hiện tại</h3>
+                                                            <div className="flex flex-col gap-3">
+                                                                <div className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-900 rounded-xl">
+                                                                    <span className="text-xs font-bold">Lượt xe đang chờ (Waiting)</span>
+                                                                    <span className="bg-blue-100 text-blue-600 text-xs px-2.5 py-0.5 rounded-full font-bold">{db.bookings?.filter(b => b.status === 'Confirmed').length} xe</span>
+                                                                </div>
+                                                                <div className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-900 rounded-xl">
+                                                                    <span className="text-xs font-bold">Xe đang rửa (Washing)</span>
+                                                                    <span className="bg-yellow-105 text-yellow-600 text-xs px-2.5 py-0.5 rounded-full font-bold">{db.bookings?.filter(b => b.status === 'Washing').length} xe</span>
+                                                                </div>
+                                                                <div className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-900 rounded-xl">
+                                                                    <span className="text-xs font-bold">Đã rửa xong chờ thu tiền</span>
+                                                                    <span className="bg-emerald-100 text-emerald-600 text-xs px-2.5 py-0.5 rounded-full font-bold">{db.bookings?.filter(b => b.status === 'Completed').length} xe</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Employee wash counts */}
+                                                        <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 material-shadow">
+                                                            <h3 className="font-extrabold text-sm text-slate-850 dark:text-white mb-4">Hiệu suất nhân viên</h3>
+                                                            <div className="flex flex-col gap-2.5">
+                                                                {db.employees?.map(e => (
+                                                                    <div key={e.employeeId} className="flex justify-between items-center text-xs border-b border-slate-100 dark:border-slate-750 pb-2">
+                                                                        <div>
+                                                                            <span className="font-bold block">{e.fullName}</span>
+                                                                            <span className="text-[10px] text-slate-400">{e.currentBay}</span>
+                                                                        </div>
+                                                                        <span className="text-blue-600 font-extrabold">{e.performanceCount} xe đã rửa</span>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Membership statistic breakdown */}
+                                                        <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 material-shadow">
+                                                            <h3 className="font-extrabold text-sm text-slate-850 dark:text-white mb-4">Cơ cấu hạng thành viên</h3>
+                                                            <div className="flex flex-col gap-2">
+                                                                <div className="flex justify-between text-xs pb-1.5 border-b border-slate-100 dark:border-slate-750">
+                                                                    <span className="font-bold">Platinum</span>
+                                                                    <span>2 thành viên</span>
+                                                                </div>
+                                                                <div className="flex justify-between text-xs pb-1.5 border-b border-slate-100 dark:border-slate-750">
+                                                                    <span className="font-bold">Gold (Vàng)</span>
+                                                                    <span>5 thành viên</span>
+                                                                </div>
+                                                                <div className="flex justify-between text-xs pb-1.5 border-b border-slate-100 dark:border-slate-750">
+                                                                    <span className="font-bold">Silver (Bạc)</span>
+                                                                    <span>12 thành viên</span>
+                                                                </div>
+                                                                <div className="flex justify-between text-xs">
+                                                                    <span className="font-bold">Member</span>
+                                                                    <span>45 thành viên</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
                                                     {/* Kanban/Board View of Booking Queue States */}
                                                     <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 material-shadow">
                                                         <h3 className="font-extrabold text-base mb-4 text-slate-850 dark:text-white flex items-center gap-1.5"><span className="material-symbols-outlined text-[20px] text-blue-600">view_week</span> Phân Phối Trạng Thái Hàng Đợi Rửa Xe</h3>
@@ -1860,7 +2003,7 @@
                                                                 <tr className="border-b border-slate-100 dark:border-slate-700 text-slate-400 font-bold uppercase text-xs">
                                                                     <th className="pb-3">Khách Hàng</th>
                                                                     <th className="pb-3">Mã Đặt</th>
-                                                                    <th className="pb-3">Ô tô</th>
+                                                                    <th className="pb-3">Phương tiện</th>
                                                                     <th className="pb-3">Giờ hẹn</th>
                                                                     <th className="pb-3">Tổng bill</th>
                                                                     <th className="pb-3">Trạng thái</th>
@@ -1948,7 +2091,7 @@
                                                                                             }
                                                                                         }
                                                                                     }}
-                                                                                    className="bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-white text-xs font-bold px-3 py-1.5 rounded">
+                                                                                    className="bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-white text-xs font-bold px-3 py-1.5 rounded shadow-sm">
                                                                                     Sửa điểm
                                                                                 </button>
                                                                             </td>
@@ -1995,7 +2138,8 @@
                                                                     estimateMinutes: Number(estimateMinutes.value),
                                                                     rating: 5.0,
                                                                     reviewsCount: 0,
-                                                                    description: description.value
+                                                                    description: description.value,
+                                                                    includedFeatures: ["Làm sạch cơ bản", "Đảm bảo chất lượng"]
                                                                 };
                                                                 updateTable("services", [...db.services, newServ]);
                                                                 alert("Thêm dịch vụ thành công!");
@@ -2077,7 +2221,7 @@
                                                                     <th className="pb-3">Họ Tên</th>
                                                                     <th className="pb-3">Vai Trò</th>
                                                                     <th className="pb-3">Phân khoang trực</th>
-                                                                    <th className="pb-3">Trạng thái</th>
+                                                                    <th className="pb-3">Số xe đã rửa</th>
                                                                     <th className="pb-3 text-right">Xóa</th>
                                                                 </tr>
                                                             </thead>
@@ -2087,9 +2231,7 @@
                                                                         <td className="py-4 font-bold text-slate-850 dark:text-white">{e.fullName}</td>
                                                                         <td className="py-4 text-slate-700 dark:text-slate-300">{e.role}</td>
                                                                         <td className="py-4 font-semibold text-blue-600">{e.currentBay}</td>
-                                                                        <td className="py-4">
-                                                                            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-600">Đang trực</span>
-                                                                        </td>
+                                                                        <td className="py-4 font-bold text-slate-800 dark:text-white">{e.performanceCount} xe</td>
                                                                         <td className="py-4 text-right">
                                                                             <button onClick={() => updateTable("employees", db.employees.filter(x => x.employeeId !== e.employeeId))} className="text-rose-500 hover:underline text-xs">Xóa</button>
                                                                         </td>
@@ -2217,6 +2359,73 @@
 
                     {/* --- GLOBAL SIMULATED MODALS --- */}
                     
+                    {/* SERVICE DETAIL MODAL (WITH RATINGS AND REVIEWS) */}
+                    {selectedService && (
+                        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+                            <div className="bg-white dark:bg-slate-850 border border-slate-250 dark:border-slate-700 rounded-2xl max-w-lg w-full p-6 shadow-2xl">
+                                <div className="flex justify-between items-start mb-4 border-b border-slate-100 dark:border-slate-750 pb-3">
+                                    <div>
+                                        <span className="bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400 text-[10px] font-black px-2.5 py-0.5 rounded uppercase">{selectedService.category}</span>
+                                        <h3 className="font-extrabold text-slate-900 dark:text-white text-lg mt-1">{selectedService.serviceName}</h3>
+                                    </div>
+                                    <button onClick={() => setSelectedService(null)} className="text-slate-400 hover:text-slate-200"><span className="material-symbols-outlined text-[20px]">close</span></button>
+                                </div>
+
+                                <div className="flex flex-col gap-4 text-sm mb-6">
+                                    <p className="text-slate-500 dark:text-slate-400 text-xs leading-relaxed">{selectedService.description}</p>
+                                    
+                                    <div>
+                                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-2">Các công việc thực hiện trong gói:</span>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            {selectedService.includedFeatures?.map((f, i) => (
+                                                <div key={i} className="flex items-center gap-1.5 text-xs text-slate-700 dark:text-slate-350">
+                                                    <span className="material-symbols-outlined text-[14px] text-blue-600">check_circle</span>
+                                                    <span>{f}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div className="border-t border-slate-100 dark:border-slate-750 pt-3">
+                                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-2">Nhận xét từ khách hàng ({selectedService.reviewsCount} lượt):</span>
+                                        <div className="flex flex-col gap-2 max-h-36 overflow-y-auto">
+                                            {MOCK_REVIEWS.map(r => (
+                                                <div key={r.id} className="bg-slate-50 dark:bg-slate-900 p-2.5 rounded-lg border border-slate-200/50 dark:border-slate-800">
+                                                    <div className="flex justify-between text-[10px] font-bold">
+                                                        <span className="text-slate-850 dark:text-slate-200">{r.author}</span>
+                                                        <span className="text-amber-500">{Array(r.rating).fill('★').join('')}</span>
+                                                    </div>
+                                                    <p className="text-[11px] text-slate-400 mt-1">{r.text}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="flex justify-between items-center border-t border-slate-100 dark:border-slate-750 pt-4">
+                                    <div>
+                                        <span className="text-[10px] text-slate-400 block font-bold uppercase">Giá gói dịch vụ</span>
+                                        <span className="text-xl font-black text-blue-600">{formatCurrency(selectedService.basePrice)}</span>
+                                    </div>
+                                    <button 
+                                        onClick={() => {
+                                            const sId = selectedService.serviceId;
+                                            setSelectedService(null);
+                                            if(!isLoggedIn) {
+                                                setAuthMode("login");
+                                            } else {
+                                                setCustomerSubTab("services");
+                                                setBookingWizard(prev => ({ ...prev, packageId: sId, step: 2 }));
+                                            }
+                                        }}
+                                        className="bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs px-6 py-2.5 rounded-xl shadow-lg">
+                                        Đăng ký lịch hẹn rửa
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     {/* OTP MODAL */}
                     {otpModal && (
                         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
@@ -2230,7 +2439,7 @@
                                         value={otpModal.inputOtp}
                                         onChange={(e) => setOtpModal(prev => ({ ...prev, inputOtp: e.target.value }))}
                                         placeholder="Nhập 6 chữ số (hoặc 123456)" 
-                                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-250 dark:border-slate-750 text-center text-xl tracking-[0.2em] font-extrabold rounded-xl px-4 py-3 text-slate-800 dark:text-white outline-none focus:border-blue-500" 
+                                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-255 dark:border-slate-750 text-center text-xl tracking-[0.2em] font-extrabold rounded-xl px-4 py-3 text-slate-800 dark:text-white outline-none focus:border-blue-500" 
                                     />
                                     <span className="text-[10px] text-slate-400 block mt-2">Mã gợi ý: <strong className="text-blue-600">{otpModal.correctOtp}</strong> (nhập mã này hoặc 123456 để hoàn tất)</span>
                                 </div>
@@ -2249,12 +2458,6 @@
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
-
-        setTimeout(() => {
-            if(window.lucide) {
-                lucide.createIcons();
-            }
-        }, 1000);
     </script>
 </body>
 </html>
